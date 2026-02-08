@@ -1,5 +1,6 @@
 import { TABLE_PRICES, SYSTEM_WALLETS, PLATFORM_FEE } from './config';
 import { prisma } from '../db';
+import { placePartnerInTable } from '../spillover/placer';
 
 // Экспортируем TABLE_PRICES
 export { TABLE_PRICES };
@@ -62,6 +63,9 @@ export async function activateTable(
   tableNumber: number,
   txHash: string
 ) {
+  console.log(`🎯 Активируем Table ${tableNumber} для User ${userId}`);
+  
+  // Создать стол пользователя (пустой)
   const table = await prisma.table.create({
     data: {
       userId: userId,
@@ -71,6 +75,9 @@ export async function activateTable(
     }
   });
   
+  console.log(`✅ Стол создан: ID ${table.id}`);
+  
+  // Обновить транзакцию
   await prisma.transaction.updateMany({
     where: {
       txHash: txHash,
@@ -81,6 +88,7 @@ export async function activateTable(
     }
   });
   
+  // Обновить статистику
   await prisma.userStats.update({
     where: { userId: userId },
     data: {
@@ -89,6 +97,17 @@ export async function activateTable(
       }
     }
   });
+  
+  console.log(`📊 Статистика обновлена`);
+  
+  // SPILLOVER: Размещаем пользователя в столе ВВЕРХ
+  const price = TABLE_PRICES[tableNumber as keyof typeof TABLE_PRICES];
+  const afterFee = tableNumber === 1 ? 0 : price * (1 - PLATFORM_FEE);
+  
+  if (afterFee > 0) {
+    console.log(`🔄 Запуск spillover для User ${userId}, Table ${tableNumber}`);
+    await placePartnerInTable(userId, tableNumber, afterFee);
+  }
   
   return table;
 }
