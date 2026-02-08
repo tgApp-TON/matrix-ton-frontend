@@ -87,7 +87,21 @@ async function processPosition(
     if (tableNumber > 1) {
       console.log(`💰 Слот 1: выплата ${amount} TON владельцу ${ownerId}`);
       
-      // TODO: Добавить в pending_payouts для batch выплаты
+      // Добавляем в pending_payouts для batch выплаты
+      await prisma.pendingPayout.create({
+        data: {
+          userId: ownerId,
+          amount: amount,
+          reason: 'slot_1',
+          tableNumber: tableNumber,
+          status: 'pending',
+          payoutMethod: 'BATCH'
+        }
+      });
+      
+      console.log(`📝 Добавлено в pending payouts`);
+      
+      // Обновляем статистику
       await prisma.userStats.update({
         where: { userId: ownerId },
         data: {
