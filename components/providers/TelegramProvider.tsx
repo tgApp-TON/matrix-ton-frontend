@@ -15,25 +15,26 @@ interface TelegramContextType {
   webApp: any;
   isReady: boolean;
   isPremium: boolean;
+  referralCode: string | null;
 }
 
 const TelegramContext = createContext<TelegramContextType>({
   user: null,
   webApp: null,
   isReady: false,
-  isPremium: false
+  isPremium: false,
+  referralCode: null
 });
 
 export function TelegramProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<TelegramUser | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   useEffect(() => {
-    // Проверяем, запущены ли мы в Telegram
     const isInTelegram = typeof window !== 'undefined' && window.Telegram?.WebApp;
     
-    if (isInTelegram) {
-      // Реальный Telegram
+    if (isInTelegram && window.Telegram) {
       const WebApp = window.Telegram.WebApp;
       WebApp.ready();
       WebApp.expand();
@@ -50,11 +51,16 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
           is_premium: tgUser.is_premium
         });
       }
+
+      const startParam = WebApp.initDataUnsafe?.start_param;
+      if (startParam) {
+        setReferralCode(startParam);
+        console.log('Referral code from URL:', startParam);
+      }
       
       WebApp.setHeaderColor('#000000');
       WebApp.setBackgroundColor('#000000');
     } else {
-      // Тестовый режим в браузере
       setUser({
         id: 123456789,
         first_name: 'Test',
@@ -63,6 +69,13 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
         language_code: 'en',
         is_premium: true
       });
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const refParam = urlParams.get('ref');
+      if (refParam) {
+        setReferralCode(refParam);
+        console.log('Referral code from browser URL:', refParam);
+      }
     }
     
     setIsReady(true);
@@ -72,7 +85,8 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     user,
     webApp: typeof window !== 'undefined' ? window.Telegram?.WebApp : null,
     isReady,
-    isPremium: user?.is_premium || false
+    isPremium: user?.is_premium || false,
+    referralCode
   };
 
   return (

@@ -1,15 +1,33 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardData } from '@/lib/types';
 import { Wallet, Users, TrendingUp, Table as TableIcon } from 'lucide-react';
+import { RegistrationScreen } from '@/components/layout/RegistrationScreen';
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [isRegistered, setIsRegistered] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('matrix_ton_registered') === 'true';
+    }
+    return false;
+  });
+  const [isChecking, setIsChecking] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isRegistered) {
+      router.push('/tables');
+    } else {
+      setIsChecking(false);
+    }
+  }, [isRegistered, router]);
 
   useEffect(() => {
     // TODO: Получить данные из API
@@ -52,6 +70,25 @@ export default function DashboardPage() {
     });
     setLoading(false);
   }, []);
+
+  if (isChecking) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isRegistered) {
+    return <RegistrationScreen onComplete={() => {
+      setIsRegistered(true);
+      localStorage.setItem('matrix_ton_registered', 'true');
+      router.push('/tables');
+    }} />;
+  }
 
   if (loading || !data) {
     return (

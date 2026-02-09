@@ -1,335 +1,453 @@
 'use client';
+
 import { useEffect, useRef } from 'react';
 
-interface TablePosition {
-  id: number;
-  partnerNickname: string;
-  position: number;
+interface Slot {
+  nickname?: string;
+  filled?: boolean;
 }
 
 interface CanvasTableCardProps {
   tableNumber: number;
   price: number;
   cycles: number;
-  slots: (TablePosition | undefined)[];
+  slots: [Slot?, Slot?, Slot?, Slot?];
   isActive: boolean;
 }
 
-export function CanvasTableCard({ tableNumber, price, cycles, slots, isActive }: CanvasTableCardProps) {
+export function CanvasTableCard({ 
+  tableNumber, 
+  price, 
+  cycles, 
+  slots,
+  isActive 
+}: CanvasTableCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const cardRef = useRef<any>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!canvasRef.current) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const width = 400;
-    const height = 560;
-    
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    ctx.scale(dpr, dpr);
+    class TonTableCard {
+      canvas: HTMLCanvasElement;
+      ctx: CanvasRenderingContext2D;
+      dpr: number;
+      opts: any;
+      time: number;
+      card: any;
+      animationId?: number;
 
-    // Stars data
-    const stars: { x: number; y: number; size: number; opacity: number; speed: number }[] = [];
-    for (let i = 0; i < 80; i++) {
-      stars.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        size: Math.random() * 2 + 0.5,
-        opacity: Math.random() * 0.5 + 0.3,
-        speed: Math.random() * 0.5 + 0.2
-      });
+      constructor(canvas: HTMLCanvasElement, options: any) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d')!;
+        this.dpr = Math.max(1, window.devicePixelRatio || 1);
+        this.time = 0;
+
+        this.opts = {
+          table: options.table ?? 1,
+          ton: options.ton ?? 10,
+          cyclesClosed: options.cyclesClosed ?? 12,
+          slots: options.slots ?? [null, null, null, null],
+          width: options.width ?? 495,
+          height: options.height ?? 770,
+          animate: options.animate ?? true,
+          isActive: options.isActive ?? true,
+        };
+
+        this.resize(this.opts.width, this.opts.height);
+        
+        if (this.opts.animate) {
+          this.loop = this.loop.bind(this);
+          this.animationId = requestAnimationFrame(this.loop);
+        } else {
+          this.draw(0);
+        }
+      }
+
+      resize(width: number, height: number) {
+        this.opts.width = width;
+        this.opts.height = height;
+
+        this.canvas.width = Math.floor(width * this.dpr);
+        this.canvas.height = Math.floor(height * this.dpr);
+        this.canvas.style.width = `${width}px`;
+        this.canvas.style.height = `${height}px`;
+
+        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+        this.draw(0);
+      }
+
+      roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+        const rr = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
+      }
+
+      getAnimatedGradient(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, t: number) {
+        const phase = (t * 0.001) % 1;
+        
+        const colors = [
+          { r: 59, g: 130, b: 246 },
+          { r: 139, g: 92, b: 246 },
+          { r: 236, g: 72, b: 153 },
+          { r: 59, g: 130, b: 246 },
+        ];
+
+        const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+        
+        for (let i = 0; i < 3; i++) {
+          const pos = (i / 2 + phase) % 1;
+          const idx = Math.floor(pos * 3);
+          const nextIdx = (idx + 1) % 3;
+          const localPhase = (pos * 3) % 1;
+          
+          const c1 = colors[idx];
+          const c2 = colors[nextIdx];
+          
+          const r = Math.round(c1.r + (c2.r - c1.r) * localPhase);
+          const g = Math.round(c1.g + (c2.g - c1.g) * localPhase);
+          const b = Math.round(c1.b + (c2.b - c1.b) * localPhase);
+          
+          grad.addColorStop(i / 2, `rgba(${r}, ${g}, ${b}, 0.9)`);
+        }
+        
+        return grad;
+      }
+
+      drawDiamondIcon(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.strokeStyle = this.opts.isActive ? 'rgba(160, 235, 255, 0.95)' : 'rgba(100, 100, 120, 0.5)';
+        ctx.lineWidth = 2;
+
+        const w = s;
+        const h = s * 0.72;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(w * 0.22, -h * 0.35);
+        ctx.lineTo(w * 0.78, -h * 0.35);
+        ctx.lineTo(w, 0);
+        ctx.lineTo(w * 0.5, h);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(w * 0.22, -h * 0.35);
+        ctx.lineTo(w * 0.5, 0);
+        ctx.lineTo(w * 0.78, -h * 0.35);
+        ctx.moveTo(w * 0.22, -h * 0.35);
+        ctx.lineTo(w * 0.35, 0);
+        ctx.lineTo(w * 0.5, h);
+        ctx.moveTo(w * 0.78, -h * 0.35);
+        ctx.lineTo(w * 0.65, 0);
+        ctx.lineTo(w * 0.5, h);
+        ctx.stroke();
+
+        if (this.opts.isActive) {
+          ctx.shadowColor = 'rgba(120,220,255,0.9)';
+          ctx.shadowBlur = 18;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      drawPlatforms(t: number) {
+        const ctx = this.ctx;
+        const W = this.opts.width;
+        const H = this.opts.height;
+        
+        if (!this.opts.isActive) return;
+
+        const cx = W / 2;
+        const baseY = H * 0.88;
+        const baseW = W * 0.72;
+        const baseH = H * 0.045;
+
+        const layers = [
+          { scale: 1.08, yOff: 18, alpha: 0.25 },
+          { scale: 1.00, yOff: 9, alpha: 0.35 },
+          { scale: 0.92, yOff: 0, alpha: 0.45 },
+        ];
+
+        layers.forEach((L, idx) => {
+          const lw = baseW * L.scale;
+          const lh = baseH;
+          const x = cx - lw / 2;
+          const y = baseY + L.yOff;
+
+          const g = ctx.createLinearGradient(x, y, x + lw, y + lh);
+          g.addColorStop(0, `rgba(30, 60, 160, ${L.alpha})`);
+          g.addColorStop(0.5, `rgba(60, 40, 180, ${L.alpha})`);
+          g.addColorStop(1, `rgba(120, 40, 200, ${L.alpha})`);
+          ctx.fillStyle = g;
+          this.roundRect(ctx, x, y, lw, lh, 12);
+          ctx.fill();
+
+          const pulse = 0.6 + 0.4 * Math.sin(t * 0.003 + idx * 0.8);
+          ctx.strokeStyle = this.getAnimatedGradient(ctx, x, y, lw, lh, t);
+          ctx.globalAlpha = pulse * 0.7;
+          ctx.lineWidth = 2;
+          this.roundRect(ctx, x, y, lw, lh, 12);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        });
+      }
+
+      drawCardShell(t: number) {
+        const ctx = this.ctx;
+        const W = this.opts.width;
+        const H = this.opts.height;
+
+        const pad = Math.round(W * 0.08);
+        const x = pad;
+        const y = Math.round(H * 0.06);
+        const w = W - pad * 2;
+        const h = H - Math.round(H * 0.20);
+
+        this.card = { x, y, w, h };
+
+        ctx.clearRect(0, 0, W, H);
+
+        this.drawPlatforms(t);
+
+        if (this.opts.isActive) {
+          ctx.save();
+          ctx.shadowColor = 'rgba(113, 83, 255, 0.6)';
+          ctx.shadowBlur = 30;
+          this.roundRect(ctx, x, y, w, h, 42);
+          ctx.strokeStyle = 'rgba(130,120,255,0.25)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        const fill = ctx.createLinearGradient(x, y, x + w, y + h);
+        if (this.opts.isActive) {
+          fill.addColorStop(0, 'rgba(7, 18, 70, 0.82)');
+          fill.addColorStop(0.55, 'rgba(8, 22, 88, 0.78)');
+          fill.addColorStop(1, 'rgba(28, 12, 88, 0.78)');
+        } else {
+          fill.addColorStop(0, 'rgba(20, 20, 30, 0.6)');
+          fill.addColorStop(1, 'rgba(30, 30, 40, 0.6)');
+        }
+        ctx.fillStyle = fill;
+        this.roundRect(ctx, x, y, w, h, 42);
+        ctx.fill();
+
+        if (this.opts.isActive) {
+          const pulse = 0.7 + 0.3 * Math.sin(t * 0.002);
+          ctx.strokeStyle = this.getAnimatedGradient(ctx, x, y, w, h, t);
+          ctx.globalAlpha = pulse;
+          ctx.lineWidth = 3;
+          this.roundRect(ctx, x, y, w, h, 42);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+
+          ctx.shadowColor = 'rgba(139, 92, 246, 0.8)';
+          ctx.shadowBlur = 40;
+          ctx.lineWidth = 2;
+          this.roundRect(ctx, x, y, w, h, 42);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+
+        if (this.opts.isActive) {
+          const dustY = y + h * 0.70;
+          for (let i = 0; i < 50; i++) {
+            const px = x + 12 + ((i * 37.17) % (w - 24));
+            const py = dustY + ((i * 53.91 + (t * 0.02)) % (h - (dustY - y) - 12));
+            const a = 0.15 + ((i * 0.07) % 0.3);
+            ctx.fillStyle = i % 3 === 0 ? `rgba(90,220,255,${a})` : `rgba(200,120,255,${a})`;
+            ctx.beginPath();
+            ctx.arc(px, py, (i % 5) * 0.18 + 0.6, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      drawHeader() {
+        const ctx = this.ctx;
+        const { x, y, w } = this.card;
+
+        const iconX = x + w * 0.09;
+        const iconY = y + 45;
+        this.drawDiamondIcon(ctx, iconX, iconY, 40);
+
+        ctx.font = '700 38px Inter, system-ui, Arial, sans-serif';
+        ctx.fillStyle = this.opts.isActive ? 'rgba(240,248,255,0.95)' : 'rgba(160,160,170,0.7)';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`Table ${this.opts.table}`, x + w * 0.35, y + 45);
+      }
+
+      drawSlots() {
+        const ctx = this.ctx;
+        const { x, y, w } = this.card;
+
+        const topY = y + 100;
+        const slotW = (w - 60) / 2;
+        const slotH = 80;
+        const gap = 15;
+
+        const slotPositions = [
+          { x: x + 20, y: topY },
+          { x: x + 20 + slotW + gap, y: topY },
+          { x: x + 20, y: topY + slotH + 12 },
+          { x: x + 20 + slotW + gap, y: topY + slotH + 12 },
+        ];
+
+        ctx.font = '600 18px Inter, system-ui, Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        slotPositions.forEach((s, i) => {
+          const slot = this.opts.slots[i];
+          const filled = slot?.nickname || slot?.filled;
+
+          const fill = ctx.createLinearGradient(s.x, s.y, s.x + slotW, s.y + slotH);
+          if (filled && this.opts.isActive) {
+            fill.addColorStop(0, 'rgba(34, 197, 94, 0.35)');
+            fill.addColorStop(1, 'rgba(59, 130, 246, 0.35)');
+          } else {
+            fill.addColorStop(0, 'rgba(34, 53, 130, 0.35)');
+            fill.addColorStop(1, 'rgba(40, 28, 125, 0.25)');
+          }
+
+          ctx.fillStyle = fill;
+          this.roundRect(ctx, s.x, s.y, slotW, slotH, 16);
+          ctx.fill();
+
+          if (filled && this.opts.isActive) {
+            const pulse = 0.6 + 0.4 * Math.sin(this.time * 0.003 + i * 0.5);
+            ctx.strokeStyle = this.getAnimatedGradient(ctx, s.x, s.y, slotW, slotH, this.time + i * 500);
+            ctx.globalAlpha = pulse;
+            ctx.lineWidth = 2.5;
+            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            ctx.shadowColor = 'rgba(34, 197, 94, 0.6)';
+            ctx.shadowBlur = 15;
+            ctx.lineWidth = 1.5;
+            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+          } else if (!filled || !this.opts.isActive) {
+            ctx.strokeStyle = this.opts.isActive ? 'rgba(89,223,255,0.4)' : 'rgba(60,60,70,0.3)';
+            ctx.lineWidth = 1.5;
+            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16);
+            ctx.stroke();
+          }
+
+          if (slot?.nickname) {
+            ctx.fillStyle = this.opts.isActive ? 'rgba(230,245,255,0.95)' : 'rgba(160,160,170,0.7)';
+            ctx.fillText(slot.nickname, s.x + slotW / 2, s.y + slotH / 2);
+          } else if (!filled) {
+            ctx.fillStyle = 'rgba(120,120,130,0.5)';
+            ctx.fillText('Empty', s.x + slotW / 2, s.y + slotH / 2);
+          }
+        });
+
+        ctx.textAlign = 'left';
+      }
+
+      drawTonBar() {
+        const ctx = this.ctx;
+        const { x, y, w } = this.card;
+
+        const barX = x + 20;
+        const barY = y + 295;
+        const barW = w - 40;
+        const barH = 70;
+
+        const g = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+        if (this.opts.isActive) {
+          g.addColorStop(0, 'rgba(17,33,125,0.85)');
+          g.addColorStop(0.5, 'rgba(18,46,165,0.8)');
+          g.addColorStop(1, 'rgba(97,41,163,0.85)');
+        } else {
+          g.addColorStop(0, 'rgba(40,40,50,0.6)');
+          g.addColorStop(1, 'rgba(50,50,60,0.6)');
+        }
+        ctx.fillStyle = g;
+        this.roundRect(ctx, barX, barY, barW, barH, 16);
+        ctx.fill();
+
+        if (this.opts.isActive) {
+          const pulse = 0.7 + 0.3 * Math.sin(this.time * 0.0025);
+          ctx.strokeStyle = this.getAnimatedGradient(ctx, barX, barY, barW, barH, this.time);
+          ctx.globalAlpha = pulse;
+          ctx.lineWidth = 2.5;
+          this.roundRect(ctx, barX, barY, barW, barH, 16);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+
+        ctx.font = '700 42px Inter, system-ui, Arial, sans-serif';
+        ctx.fillStyle = this.opts.isActive ? 'rgba(235,245,255,0.98)' : 'rgba(160,160,170,0.7)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${this.opts.ton} TON`, barX + barW / 2, barY + barH / 2);
+        ctx.textAlign = 'left';
+      }
+
+      drawCycles() {
+        const ctx = this.ctx;
+        const { x, y, w } = this.card;
+
+        ctx.font = '500 28px Inter, system-ui, Arial, sans-serif';
+        ctx.fillStyle = this.opts.isActive ? 'rgba(234,244,255,0.95)' : 'rgba(160,160,170,0.7)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`Cycles closed: ${this.opts.cyclesClosed}`, x + w / 2, y + 400);
+        ctx.textAlign = 'left';
+      }
+
+      draw(timeMs: number) {
+        this.time = timeMs;
+        this.drawCardShell(timeMs);
+        this.drawHeader();
+        this.drawSlots();
+        this.drawTonBar();
+        this.drawCycles();
+      }
+
+      loop(ts: number) {
+        this.draw(ts);
+        this.animationId = requestAnimationFrame(this.loop.bind(this));
+      }
+
+      destroy() {
+        if (this.animationId) {
+          cancelAnimationFrame(this.animationId);
+        }
+      }
     }
 
-    const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + w, y, x + w, y + h, r);
-      ctx.arcTo(x + w, y + h, x, y + h, r);
-      ctx.arcTo(x, y + h, x, y, r);
-      ctx.arcTo(x, y, x + w, y, r);
-      ctx.closePath();
-    };
+    const slotsData = slots.map(slot => ({
+      nickname: slot?.nickname,
+      filled: slot?.filled || !!slot?.nickname
+    }));
 
-    const drawDiamond = (x: number, y: number, size: number) => {
-      ctx.save();
-      ctx.translate(x, y);
-      
-      // White fill with glow
-      ctx.shadowColor = 'rgba(100, 200, 255, 0.8)';
-      ctx.shadowBlur = 20;
-      
-      const s = size;
-      
-      // Main diamond shape - white fill
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.beginPath();
-      ctx.moveTo(0, -s * 0.4);
-      ctx.lineTo(s * 0.35, 0);
-      ctx.lineTo(0, s * 0.6);
-      ctx.lineTo(-s * 0.35, 0);
-      ctx.closePath();
-      ctx.fill();
-      
-      // Top facet
-      ctx.fillStyle = 'rgba(200, 230, 255, 0.9)';
-      ctx.beginPath();
-      ctx.moveTo(0, -s * 0.4);
-      ctx.lineTo(s * 0.35, 0);
-      ctx.lineTo(0, -s * 0.1);
-      ctx.lineTo(-s * 0.35, 0);
-      ctx.closePath();
-      ctx.fill();
-      
-      // Inner lines
-      ctx.strokeStyle = 'rgba(100, 150, 255, 0.4)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(0, -s * 0.4);
-      ctx.lineTo(0, s * 0.6);
-      ctx.moveTo(-s * 0.35, 0);
-      ctx.lineTo(s * 0.35, 0);
-      ctx.stroke();
-      
-      ctx.restore();
-    };
-
-    const draw = (time: number) => {
-      ctx.clearRect(0, 0, width, height);
-
-      const mainCardY = 40;
-      const mainCardH = 480;
-      const cardX = 20;
-      const cardW = width - 40;
-      const radius = 28;
-
-      // === DRAW 3D PLATFORM LAYERS (bottom) ===
-      const platformLayers = [
-        { y: mainCardY + mainCardH + 8, scale: 0.96, opacity: 0.6 },
-        { y: mainCardY + mainCardH + 20, scale: 0.92, opacity: 0.4 },
-        { y: mainCardY + mainCardH + 32, scale: 0.88, opacity: 0.25 }
-      ];
-
-      platformLayers.forEach((layer) => {
-        const layerW = cardW * layer.scale;
-        const layerX = cardX + (cardW - layerW) / 2;
-        
-        // Shadow
-        ctx.save();
-        ctx.globalAlpha = layer.opacity * 0.3;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.filter = 'blur(12px)';
-        roundRect(layerX, layer.y + 5, layerW, 8, radius * layer.scale);
-        ctx.fill();
-        ctx.restore();
-
-        // Platform
-        ctx.save();
-        ctx.globalAlpha = layer.opacity;
-        
-        // Gradient fill
-        const platformGrad = ctx.createLinearGradient(layerX, layer.y, layerX + layerW, layer.y);
-        platformGrad.addColorStop(0, 'rgba(60, 80, 200, 0.8)');
-        platformGrad.addColorStop(0.5, 'rgba(100, 60, 180, 0.8)');
-        platformGrad.addColorStop(1, 'rgba(200, 60, 160, 0.8)');
-        ctx.fillStyle = platformGrad;
-        roundRect(layerX, layer.y, layerW, 8, radius * layer.scale);
-        ctx.fill();
-        
-        // Border glow
-        const borderGrad = ctx.createLinearGradient(layerX, layer.y, layerX + layerW, layer.y);
-        borderGrad.addColorStop(0, 'rgba(0, 200, 255, 0.9)');
-        borderGrad.addColorStop(1, 'rgba(255, 100, 200, 0.9)');
-        ctx.strokeStyle = borderGrad;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = 'rgba(100, 200, 255, 0.8)';
-        ctx.shadowBlur = 15;
-        roundRect(layerX, layer.y, layerW, 8, radius * layer.scale);
-        ctx.stroke();
-        
-        ctx.restore();
-      });
-
-      // === MAIN CARD ===
-      
-      // Deep shadow
-      ctx.save();
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      ctx.filter = 'blur(25px)';
-      roundRect(cardX + 5, mainCardY + 10, cardW, mainCardH, radius);
-      ctx.fill();
-      ctx.restore();
-
-      // Card background - deep purple gradient
-      const bgGrad = ctx.createRadialGradient(
-        cardX + cardW / 2, mainCardY + mainCardH * 0.3, 
-        0, 
-        cardX + cardW / 2, mainCardY + mainCardH * 0.5, 
-        cardW * 0.8
-      );
-      bgGrad.addColorStop(0, 'rgba(30, 20, 80, 0.95)');
-      bgGrad.addColorStop(0.5, 'rgba(20, 15, 60, 0.95)');
-      bgGrad.addColorStop(1, 'rgba(40, 10, 70, 0.95)');
-      ctx.fillStyle = bgGrad;
-      roundRect(cardX, mainCardY, cardW, mainCardH, radius);
-      ctx.fill();
-
-      // Animated stars inside card
-      ctx.save();
-      roundRect(cardX, mainCardY, cardW, mainCardH, radius);
-      ctx.clip();
-      
-      stars.forEach((star) => {
-        star.y += star.speed;
-        if (star.y > mainCardY + mainCardH) star.y = mainCardY;
-        
-        ctx.fillStyle = `rgba(150, 180, 255, ${star.opacity})`;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.restore();
-
-      // MASSIVE GLOW BORDER
-      const pulse = 0.7 + Math.sin(time * 0.002) * 0.3;
-      
-      // Outer glow layers
-      for (let i = 0; i < 3; i++) {
-        ctx.save();
-        const glowGrad = ctx.createLinearGradient(cardX, mainCardY, cardX + cardW, mainCardY + mainCardH);
-        glowGrad.addColorStop(0, `rgba(0, 220, 255, ${0.4 * pulse})`);
-        glowGrad.addColorStop(0.5, `rgba(180, 100, 255, ${0.5 * pulse})`);
-        glowGrad.addColorStop(1, `rgba(255, 80, 200, ${0.4 * pulse})`);
-        
-        ctx.strokeStyle = glowGrad;
-        ctx.lineWidth = 4 + i * 2;
-        ctx.shadowColor = i === 0 ? 'rgba(100, 200, 255, 0.8)' : 'rgba(255, 100, 200, 0.6)';
-        ctx.shadowBlur = 25 + i * 10;
-        roundRect(cardX - i, mainCardY - i, cardW + i * 2, mainCardH + i * 2, radius + i);
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // === HEADER - Diamond + Table ===
-      const headerY = mainCardY + 40;
-      drawDiamond(cardX + 50, headerY, 35);
-      
-      ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.98)';
-      ctx.shadowColor = 'rgba(100, 200, 255, 0.5)';
-      ctx.shadowBlur = 10;
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`Table ${tableNumber}`, cardX + 100, headerY);
-      ctx.shadowBlur = 0;
-
-      // === SLOTS 2x2 ===
-      const slotStartY = mainCardY + 100;
-      const slotW = (cardW - 60) / 2;
-      const slotH = 80;
-      const slotGap = 15;
-      
-      const slotPositions = [
-        { x: cardX + 20, y: slotStartY },
-        { x: cardX + 20 + slotW + slotGap, y: slotStartY },
-        { x: cardX + 20, y: slotStartY + slotH + slotGap },
-        { x: cardX + 20 + slotW + slotGap, y: slotStartY + slotH + slotGap }
-      ];
-
-      ctx.font = '17px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-
-      slotPositions.forEach((pos, i) => {
-        const slot = slots[i];
-        
-        // Slot bg
-        const slotBg = ctx.createLinearGradient(pos.x, pos.y, pos.x, pos.y + slotH);
-        slotBg.addColorStop(0, 'rgba(50, 40, 120, 0.6)');
-        slotBg.addColorStop(1, 'rgba(30, 20, 80, 0.7)');
-        ctx.fillStyle = slotBg;
-        roundRect(pos.x, pos.y, slotW, slotH, 16);
-        ctx.fill();
-        
-        // Border
-        const slotBorder = ctx.createLinearGradient(pos.x, pos.y, pos.x + slotW, pos.y + slotH);
-        slotBorder.addColorStop(0, 'rgba(80, 180, 255, 0.8)');
-        slotBorder.addColorStop(1, 'rgba(200, 120, 255, 0.8)');
-        ctx.strokeStyle = slotBorder;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = 'rgba(100, 180, 255, 0.5)';
-        ctx.shadowBlur = 8;
-        roundRect(pos.x, pos.y, slotW, slotH, 16);
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-        
-        // Text
-        ctx.fillStyle = slot ? 'rgba(255, 255, 255, 0.95)' : 'rgba(150, 160, 180, 0.5)';
-        ctx.fillText(slot ? slot.partnerNickname : 'Empty', pos.x + slotW / 2, pos.y + slotH / 2);
-      });
-
-      // === TON BAR ===
-      const barY = mainCardY + 310;
-      const barW = cardW - 40;
-      const barH = 70;
-      const barX = cardX + 20;
-      
-      // Bar bg
-      const barBg = ctx.createLinearGradient(barX, barY, barX, barY + barH);
-      barBg.addColorStop(0, 'rgba(40, 60, 160, 0.9)');
-      barBg.addColorStop(1, 'rgba(80, 30, 140, 0.9)');
-      ctx.fillStyle = barBg;
-      roundRect(barX, barY, barW, barH, 18);
-      ctx.fill();
-      
-      // Bar border with MEGA glow
-      const barBorder = ctx.createLinearGradient(barX, barY, barX + barW, barY);
-      barBorder.addColorStop(0, 'rgba(0, 230, 255, 1)');
-      barBorder.addColorStop(0.5, 'rgba(180, 100, 255, 1)');
-      barBorder.addColorStop(1, 'rgba(255, 80, 200, 1)');
-      ctx.strokeStyle = barBorder;
-      ctx.lineWidth = 3;
-      ctx.shadowColor = 'rgba(100, 200, 255, 0.9)';
-      ctx.shadowBlur = 20;
-      roundRect(barX, barY, barW, barH, 18);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      
-      // TON text
-      ctx.font = 'bold 38px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.98)';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(100, 200, 255, 0.6)';
-      ctx.shadowBlur = 12;
-      ctx.fillText(`${price} TON`, barX + barW / 2, barY + barH / 2 + 2);
-      
-      // Cycles
-      ctx.font = '19px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = 'rgba(240, 245, 255, 0.9)';
-      ctx.shadowBlur = 8;
-      ctx.fillText(`Cycles closed: ${cycles}`, barX + barW / 2, barY + barH + 35);
-      ctx.shadowBlur = 0;
-      
-      ctx.textAlign = 'left';
-    };
-
-    const animate = (timestamp: number) => {
-      draw(timestamp);
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
+    cardRef.current = new TonTableCard(canvasRef.current, {
+      table: tableNumber,
+      ton: price,
+      cyclesClosed: cycles,
+      slots: slotsData,
+      animate: true,
+      width: 495,
+      height: 770,
+      isActive: isActive
+    });
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      cardRef.current?.destroy();
     };
-  }, [tableNumber, price, cycles, slots]);
+  }, [tableNumber, price, cycles, slots, isActive]);
 
-  return <canvas ref={canvasRef} className="block" />;
+  return <canvas ref={canvasRef} className="w-full h-auto" />;
 }
