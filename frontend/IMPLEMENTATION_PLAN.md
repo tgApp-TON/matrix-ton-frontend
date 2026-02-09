@@ -1,5 +1,56 @@
 # Matrix TON - Full Implementation Plan
 
+## Current Priority Order
+
+### ✅ COMPLETED:
+- Phase 1: Onboarding flow (4 steps, validation)
+- Phase 2: Menu system (fullscreen, stats, referral preview)
+- Phase 4: Tables page (Canvas rendering, 12 tables)
+- UI improvements (zoom controls, theme toggle, responsive design)
+
+### 🔥 IMMEDIATE PRIORITY (Working Now):
+**Phase 3: Backend Integration**
+- [ ] Connect Supabase database
+- [ ] Setup API routes for user data
+- [ ] TON Wallet integration (TON Connect)
+- [ ] Real-time data sync
+- [ ] Transaction monitoring
+- [ ] Payment processing
+
+**Phase 4: Testing & QA**
+- [ ] Test full user flow (onboarding → tables → menu → referrals)
+- [ ] Mobile responsiveness testing
+- [ ] Fix bugs
+- [ ] Performance optimization
+- [ ] Cross-browser testing
+
+### 📅 BACKLOG (Later):
+**Phase 5: Referrals Page**
+- [ ] Visual tree structure
+- [ ] Referral statistics
+- [ ] QR code generation
+- [ ] Share functionality
+
+**Phase 6: Statistics Page**
+- [ ] Earnings charts (daily/weekly/monthly)
+- [ ] Transaction history
+- [ ] Export data
+- [ ] Analytics dashboard
+
+**Phase 7: Tables Enhancement**
+- [ ] Purchase buttons for locked tables
+- [ ] Table detail modals
+- [ ] Slot filling animations
+- [ ] Real-time updates
+
+**Phase 8: Settings Page**
+- [ ] User profile editing
+- [ ] Wallet management
+- [ ] Notification preferences
+- [ ] Language selection
+
+---
+
 ## Phase 1: Onboarding Flow ✅ DONE
 - [x] Registration Screen (4 steps)
 - [x] Premium check

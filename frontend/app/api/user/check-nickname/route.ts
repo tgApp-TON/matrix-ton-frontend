@@ -1,20 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
+  const { searchParams } = new URL(request.url);
   const nickname = searchParams.get('nickname');
 
   if (!nickname) {
-    return NextResponse.json({ error: 'Nickname is required' }, { status: 400 });
+    return NextResponse.json({ error: 'Nickname required' }, { status: 400 });
   }
 
-  // TODO: Check database for existing nickname
-  // For now, mock response - always available except 'test'
-  const takenNicknames = ['test', 'admin', 'support'];
-  const isTaken = takenNicknames.includes(nickname.toLowerCase());
+  if (nickname.toLowerCase() === 'master') {
+    return NextResponse.json({ taken: true, available: false });
+  }
+
+  // Use Supabase client instead of Prisma
+  const { data, error } = await supabase
+    .from('User')
+    .select('id')
+    .eq('nickname', nickname)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    console.error('Supabase error:', error);
+  }
 
   return NextResponse.json({ 
-    taken: isTaken,
-    available: !isTaken 
+    taken: !!data, 
+    available: !data 
   });
 }

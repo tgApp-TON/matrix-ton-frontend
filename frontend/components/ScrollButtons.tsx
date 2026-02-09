@@ -1,12 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Table, Users, TrendingUp, Settings, Sun, Moon } from 'lucide-react';
 import { AnimatedBackground } from '@/components/layout/AnimatedBackground';
 
 export function ScrollButtons() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const [userStats, setUserStats] = useState({
+    totalEarned: 0,
+    activeTables: 0,
+    directReferrals: 0, // Personal workers
+    totalReferrals: 0,  // Entire tree
+    totalCycles: 0
+  });
+  const [referralsList, setReferralsList] = useState<any[]>([]);
+  const [upline, setUpline] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      const userId = localStorage.getItem('matrix_ton_user_id') || '1';
+      
+      // Fetch tables
+      const tablesRes = await fetch(`/api/user/tables?userId=${userId}`);
+      const tablesData = await tablesRes.json();
+      
+      if (tablesData.success) {
+        const activeTables = tablesData.tables.filter((t: any) => t.status === 'ACTIVE').length;
+        const totalCycles = tablesData.tables.reduce((sum: number, t: any) => sum + t.cycleNumber, 0);
+        
+        setUserStats(prev => ({
+          ...prev,
+          totalEarned: 0, // TODO: calculate from transactions
+          activeTables,
+          totalCycles
+        }));
+      }
+
+      // Fetch referrals
+      const referralsRes = await fetch(`/api/user/referrals?userId=${userId}`);
+      const referralsData = await referralsRes.json();
+
+      if (referralsData.success) {
+        setUserStats(prev => ({
+          ...prev,
+          directReferrals: referralsData.directCount,
+          totalReferrals: referralsData.totalTreeCount
+        }));
+        
+        // Save first 3 referrals for display
+        setReferralsList(referralsData.directReferrals.slice(0, 3));
+        setUpline(referralsData.upline); // Save upline
+      }
+    };
+    
+    if (isMenuOpen) {
+      fetchUserStats();
+    }
+  }, [isMenuOpen]);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -170,96 +221,113 @@ export function ScrollButtons() {
                 <div className="p-10 rounded-2xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 min-h-[200px]">
                   <div className="flex items-center justify-between">
                     <div className="text-white" style={{ fontSize: '3.75rem' }}>Total Earned</div>
-                    <div className="text-white font-bold" style={{ fontSize: '6rem' }}>156.8 TON</div>
+                    <div className="text-white font-bold" style={{ fontSize: '6rem' }}>{userStats.totalEarned} TON</div>
                   </div>
                 </div>
                 
                 <div className="p-10 rounded-2xl bg-gradient-to-br from-cyan-600/20 to-blue-600/20 min-h-[200px]">
                   <div className="flex items-center justify-between">
                     <div className="text-white" style={{ fontSize: '3.75rem' }}>Active Tables</div>
-                    <div className="text-white font-bold" style={{ fontSize: '6rem' }}>6/12</div>
+                    <div className="text-white font-bold" style={{ fontSize: '6rem' }}>{userStats.activeTables}/12</div>
                   </div>
                 </div>
                 
                 <div className="p-10 rounded-2xl bg-gradient-to-br from-pink-600/20 to-red-600/20 min-h-[200px]">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-4">
                     <div className="text-white" style={{ fontSize: '3.75rem' }}>Referrals</div>
-                    <div className="text-white font-bold" style={{ fontSize: '6rem' }}>47</div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="text-gray-400" style={{ fontSize: '2.5rem' }}>Direct</div>
+                      <div className="text-white font-bold" style={{ fontSize: '3rem' }}>{userStats.directReferrals}</div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="text-gray-400" style={{ fontSize: '2.5rem' }}>Total Tree</div>
+                      <div className="text-white font-bold" style={{ fontSize: '3rem' }}>{userStats.totalReferrals}</div>
+                    </div>
                   </div>
                 </div>
                 
                 <div className="p-10 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 min-h-[200px]">
                   <div className="flex items-center justify-between">
                     <div className="text-white" style={{ fontSize: '3.75rem' }}>Total Cycles</div>
-                    <div className="text-white font-bold" style={{ fontSize: '6rem' }}>46</div>
+                    <div className="text-white font-bold" style={{ fontSize: '6rem' }}>{userStats.totalCycles}</div>
                   </div>
                 </div>
               </div>
 
               {/* Referral Tree */}
               <div className="flex-1 overflow-y-auto" style={{ marginTop: '80px' }}>
-                <h3 className="font-bold text-white mb-4" style={{ fontSize: '6rem' }}>My Referral Tree</h3>
+                <h3 className="font-bold text-white mb-10" style={{ fontSize: '6rem' }}>
+                  My Referral Tree
+                </h3>
                 
-                {/* Upline (who referred you) */}
-                <div className="mb-16">
-                  <div className="text-purple-300 mb-2" style={{ fontSize: '2.25rem' }}>↑ Referred by</div>
-                  <div className="p-10 rounded-xl bg-purple-600/20">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-white" style={{ fontSize: '6rem' }}>@DiamondMaster</div>
-                        <div className="text-gray-400" style={{ fontSize: '3.75rem' }}>12 tables • 156 referrals</div>
-                      </div>
-                      <div className="text-purple-300">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                        </svg>
+                {/* Upline - only show if exists (not MASTER's referral) */}
+                {upline && (
+                  <div className="mb-16">
+                    <div className="mb-10" style={{ fontSize: '2.25rem', color: '#a78bfa' }}>
+                      ↑ Referred by
+                    </div>
+                    <div className="p-10 rounded-2xl bg-purple-600/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-white" style={{ fontSize: '3rem' }}>
+                            @{upline.nickname}
+                          </div>
+                          <div className="text-gray-400" style={{ fontSize: '2rem', marginTop: '8px' }}>
+                            {upline.activeTables} tables • {upline.referralsCount} referrals
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Your direct referrals */}
                 <div>
-                  <div className="text-cyan-300 mb-10" style={{ fontSize: '2.25rem' }}>↓ My Direct Referrals (47)</div>
+                  <div className="mb-10" style={{ fontSize: '2.25rem', color: '#22d3ee' }}>
+                    ↓ My Direct Referrals ({userStats.directReferrals})
+                  </div>
                   <div className="space-y-8">
-                    {/* Referral 1 */}
-                    <div className="p-10 rounded-xl bg-cyan-600/10">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-bold text-white" style={{ fontSize: '6rem' }}>@Alice</div>
-                          <div className="text-gray-400" style={{ fontSize: '3.75rem' }}>6 tables • 23 referrals</div>
+                    {referralsList.length > 0 ? (
+                      referralsList.map((ref) => (
+                        <div key={ref.id} className="p-10 rounded-2xl bg-cyan-600/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-bold text-white" style={{ fontSize: '3rem' }}>
+                                @{ref.nickname}
+                              </div>
+                              <div className="text-gray-400" style={{ fontSize: '2rem', marginTop: '8px' }}>
+                                {ref.activeTables} tables • {ref.referralsCount} referrals
+                              </div>
+                              <div className="text-green-400 font-bold" style={{ fontSize: '2.5rem', marginTop: '8px' }}>
+                                💰 {ref.totalEarnings || 0} TON
+                              </div>
+                            </div>
+                            <div className="text-green-400" style={{ fontSize: '2rem' }}>Active</div>
+                          </div>
                         </div>
-                        <div className="text-green-400" style={{ fontSize: '3.75rem' }}>Active</div>
+                      ))
+                    ) : (
+                      <div className="p-10 rounded-2xl bg-white/5 text-center">
+                        <div className="text-gray-400" style={{ fontSize: '2.5rem' }}>No direct referrals yet</div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* Referral 2 */}
-                    <div className="p-10 rounded-xl bg-cyan-600/10">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-bold text-white" style={{ fontSize: '6rem' }}>@Bob</div>
-                          <div className="text-gray-400" style={{ fontSize: '3.75rem' }}>3 tables • 12 referrals</div>
+                    {userStats.directReferrals > 3 && (
+                      <div className="p-10 rounded-2xl bg-white/5 text-center">
+                        <div className="text-gray-400" style={{ fontSize: '2.5rem' }}>
+                          + {userStats.directReferrals - 3} more referrals
                         </div>
-                        <div className="text-green-400" style={{ fontSize: '3.75rem' }}>Active</div>
+                        <button 
+                          onClick={() => window.location.href = '/referrals'}
+                          className="text-purple-400 hover:underline"
+                          style={{ fontSize: '2rem', marginTop: '8px' }}
+                        >
+                          View All →
+                        </button>
                       </div>
-                    </div>
-
-                    {/* Referral 3 */}
-                    <div className="p-10 rounded-xl bg-cyan-600/10">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-bold text-white" style={{ fontSize: '6rem' }}>@Charlie</div>
-                          <div className="text-gray-400" style={{ fontSize: '3.75rem' }}>8 tables • 34 referrals</div>
-                        </div>
-                        <div className="text-green-400" style={{ fontSize: '3.75rem' }}>Active</div>
-                      </div>
-                    </div>
-
-                    {/* More indicator */}
-                    <div className="p-10 rounded-xl bg-white/5 text-center">
-                      <div className="text-gray-400" style={{ fontSize: '3.75rem' }}>+ 44 more referrals</div>
-                      <a href="/referrals" className="text-purple-400 hover:underline" style={{ fontSize: '2.25rem' }}>View All</a>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>

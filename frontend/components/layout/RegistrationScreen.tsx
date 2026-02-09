@@ -10,15 +10,39 @@ interface RegistrationScreenProps {
 
 const COUNTRIES = [
   { code: 'US', name: 'United States', flag: '🇺🇸' },
-  { code: 'RU', name: 'Russia', flag: '🇷🇺' },
   { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺' },
   { code: 'DE', name: 'Germany', flag: '🇩🇪' },
   { code: 'FR', name: 'France', flag: '🇫🇷' },
   { code: 'ES', name: 'Spain', flag: '🇪🇸' },
   { code: 'IT', name: 'Italy', flag: '🇮🇹' },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+  { code: 'BR', name: 'Brazil', flag: '🇧🇷' },
+  { code: 'MX', name: 'Mexico', flag: '🇲🇽' },
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+  { code: 'PE', name: 'Peru', flag: '🇵🇪' },
+  { code: 'RU', name: 'Russia', flag: '🇷🇺' },
   { code: 'UA', name: 'Ukraine', flag: '🇺🇦' },
   { code: 'PL', name: 'Poland', flag: '🇵🇱' },
   { code: 'TR', name: 'Turkey', flag: '🇹🇷' },
+  { code: 'IN', name: 'India', flag: '🇮🇳' },
+  { code: 'CN', name: 'China', flag: '🇨🇳' },
+  { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+  { code: 'KR', name: 'South Korea', flag: '🇰🇷' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩' },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭' },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳' },
+  { code: 'PH', name: 'Philippines', flag: '🇵🇭' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾' },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦' },
+  { code: 'NG', name: 'Nigeria', flag: '🇳🇬' },
+  { code: 'EG', name: 'Egypt', flag: '🇪🇬' },
+  { code: 'KE', name: 'Kenya', flag: '🇰🇪' },
+  { code: 'NONE', name: 'No name / Other', flag: '🌍' }
 ];
 
 export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
@@ -126,6 +150,39 @@ export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
     }
   };
 
+  const registerUser = async (data: {
+    telegramId: string;
+    username: string;
+    nickname: string;
+    referralCode: string;
+    country: string;
+    firstName?: string;
+    lastName?: string;
+    languageCode?: string;
+    phoneNumber?: string | null;
+    isPremium?: boolean;
+  }) => {
+    try {
+      const response = await fetch('/api/user/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Registration error details:', errorData);
+        throw new Error(errorData.error || 'Registration failed');
+      }
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  };
+
   const handleNicknameSubmit = async () => {
     if (isNicknameValid && nickname.length >= 3) {
       const isValid = await checkNickname(nickname);
@@ -141,10 +198,44 @@ export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
     }
   };
 
-  const handleReferralSubmit = (overrideCode?: string) => {
+  const handleReferralSubmit = async (overrideCode?: string) => {
     const finalReferralCode = overrideCode !== undefined ? overrideCode : (referralCode || 'MASTER');
     console.log('Registration:', { nickname, country, referralCode: finalReferralCode });
-    onComplete();
+    
+    try {
+      // Get Telegram user data
+      const tg = window.Telegram?.WebApp;
+      const telegramUser = tg?.initDataUnsafe?.user;
+      
+      // Register user in database
+      const result = await registerUser({
+        telegramId: telegramUser?.id?.toString() || `999${Date.now()}`,
+        username: telegramUser?.username || `user_${nickname}`,
+        nickname,
+        referralCode: finalReferralCode,
+        country: country || 'Unknown',
+        // Additional Telegram data
+        firstName: telegramUser?.first_name || '',
+        lastName: telegramUser?.last_name || '',
+        languageCode: telegramUser?.language_code || 'en',
+        phoneNumber: null, // Telegram doesn't provide this in WebApp
+        isPremium: telegramUser?.is_premium || false
+      });
+      
+      // Save userId to localStorage after successful registration
+      if (result.success && result.user) {
+        localStorage.setItem('matrix_ton_user_id', result.user.id.toString());
+      }
+      
+      // Continue with existing flow
+      onComplete();
+    } catch (error) {
+      console.error('Registration failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Registration failed: ${errorMessage}`);
+      // Don't call onComplete() on error
+      return;
+    }
   };
 
   const handleSkipReferral = () => {
@@ -653,12 +744,12 @@ export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
                 </button>
               )}
               <button
-                onClick={handleReferralSubmit}
+                onClick={() => handleReferralSubmit()}
                 disabled={referralCode.length > 0 && (!referralStatus || !referralStatus.valid)}
                 style={{
-                  flex: referralCodeFromUrl ? 1 : 1,
-                  width: referralCodeFromUrl ? '100%' : 'auto',
                   ...buttonStyle,
+                  flex: referralCodeFromUrl ? 1 : 1,
+                  width: referralCodeFromUrl ? '100%' : buttonStyle.width,
                   opacity: (referralCode.length === 0 || (referralStatus && referralStatus.valid)) ? 1 : 0.5,
                   cursor: (referralCode.length === 0 || (referralStatus && referralStatus.valid)) ? 'pointer' : 'not-allowed'
                 }}
