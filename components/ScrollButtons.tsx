@@ -77,7 +77,7 @@ export function ScrollButtons() {
             overflowY: 'auto', color: '#ffffff', paddingTop: '120px', lineHeight: '1.8'
           }} className="p-6 menu-text">
             <AnimatedBackground />
-            <div className="flex flex-col h-full relative z-10">
+            <div className="flex flex-col h-full relative z-10" style={{ paddingTop: '80px' }}>
               <button
                 onClick={() => setIsMenuOpen(false)}
                 style={{
@@ -93,18 +93,14 @@ export function ScrollButtons() {
               </button>
 
               {/* Stats */}
-              <div className="flex flex-col gap-6 mb-8" style={{ marginTop: '30px' }}>
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-cyan-600/20 to-blue-600/20 min-h-[80px]">
-                  <div className="flex items-center justify-between">
-                    <div className="text-white" style={{ fontSize: '1.5rem' }}>Active Tables</div>
-                    <div className="text-white font-bold" style={{ fontSize: '2.5rem' }}>{activeTables}/12</div>
-                  </div>
+              <div className="flex flex-col mb-8">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.2rem', color: 'white', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+                  <span>Active Tables</span>
+                  <span>{activeTables}/12</span>
                 </div>
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 min-h-[80px]">
-                  <div className="flex items-center justify-between">
-                    <div className="text-white" style={{ fontSize: '1.5rem' }}>Total Cycles</div>
-                    <div className="text-white font-bold" style={{ fontSize: '2.5rem' }}>{totalCycles}</div>
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.2rem', color: 'white', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+                  <span>Total Cycles</span>
+                  <span>{totalCycles}</span>
                 </div>
               </div>
 
@@ -116,7 +112,7 @@ export function ScrollButtons() {
                 ].map(item => (
                   <a key={item.href} href={item.href}
                     className="p-5 rounded-xl bg-white/5 hover:bg-white/10 transition-all"
-                    style={{ fontSize: '1.8rem', color: 'white', textDecoration: 'none' }}
+                    style={{ fontSize: '1.2rem', color: 'white', textDecoration: 'none' }}
                   >
                     {item.label}
                   </a>
