@@ -38,15 +38,6 @@ export default function TablesPage() {
     <div className="min-h-screen relative">
       <ScrollButtons />
       <div className="container mx-auto p-4 max-w-5xl relative z-10">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-            Matrix TON Tables
-          </h1>
-          <p className="text-gray-300">
-            {activeTables.length} of 12 tables active
-          </p>
-        </div>
-
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
