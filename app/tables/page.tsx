@@ -68,16 +68,11 @@ export default function TablesPage() {
       {!loading && <ScrollButtons />}
       <div className="container mx-auto p-4 max-w-5xl relative z-10">
         <div
-          className="grid grid-cols-2 gap-3"
+          className="grid grid-cols-2 gap-3 pt-[90px] mb-12"
           style={{
             margin: '0 auto',
-            width: '100%',
-            maxWidth: '100%',
-            paddingTop: '90px',
-            paddingLeft: '4px',
-            paddingRight: '4px',
-            marginLeft: '8px',
-            marginBottom: '3rem',
+            padding: '0 2px',
+            width: 'calc(100% - 4px)',
           }}
         >
           {loading ? (
@@ -148,7 +143,7 @@ export default function TablesPage() {
               };
 
               return (
-                <div key={table.id} className="w-full" style={{ paddingLeft: '4px', paddingRight: '4px' }}>
+                <div key={table.id} className="w-full">
                   <CanvasTableCard
                     tableNumber={table.tableNumber}
                     price={price}
