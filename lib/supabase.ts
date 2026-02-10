@@ -1,20 +1,21 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-export function getSupabase() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+let _supabaseInstance: SupabaseClient | null = null
+
+function createSupabaseClient(): SupabaseClient {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  const key = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
   
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables')
-  }
+  console.log('Creating Supabase client, URL:', url ? url.substring(0, 30) + '...' : 'EMPTY')
   
-  return createClient(supabaseUrl, supabaseAnonKey)
+  return createClient(url, key)
 }
 
-export const supabase = {
-  from: (table: string) => getSupabase().from(table),
-  auth: {
-    getUser: () => getSupabase().auth.getUser()
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    if (!_supabaseInstance) {
+      _supabaseInstance = createSupabaseClient()
+    }
+    return (_supabaseInstance as any)[prop]
   }
-}
-// force rebuild Tue Feb 10 17:26:42 CET 2026
+})
