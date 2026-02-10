@@ -38,17 +38,9 @@ export default function TablesPage() {
     <div className="min-h-screen relative">
       <ScrollButtons />
       <div className="container mx-auto p-4 max-w-5xl relative z-10">
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '24px',
-          maxWidth: '900px',
-          margin: '0 auto',
-          padding: '0 40px',
-          marginBottom: '3rem'
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[900px] mx-auto px-4 md:px-10 mb-12">
           {loading ? (
-            <div className="col-span-2 text-center text-white text-xl py-12">
+            <div className="col-span-1 md:col-span-2 text-center text-white text-xl py-12">
               Loading tables...
             </div>
           ) : userTables.length > 0 ? (
@@ -76,7 +68,7 @@ export default function TablesPage() {
               );
             })
           ) : (
-            <div className="col-span-2 text-center text-white text-xl py-12">
+            <div className="col-span-1 md:col-span-2 text-center text-white text-xl py-12">
               No tables found
             </div>
           )}
