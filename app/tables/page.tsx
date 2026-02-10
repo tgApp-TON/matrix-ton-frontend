@@ -145,7 +145,7 @@ export default function TablesPage() {
               };
 
               return (
-                <div key={table.id} style={{ width: '47vw' }}>
+                <div key={table.id} style={{ width: '45vw' }}>
                   <CanvasTableCard
                     tableNumber={table.tableNumber}
                     price={price}
