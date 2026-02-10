@@ -140,8 +140,8 @@ export function RegisterClient() {
         }),
       });
       const data = await res.json();
-      if (data.success && data.user) {
-        localStorage.setItem('matrix_ton_user_id', String(data.user.id));
+      if (data.success && (data.userId != null || data.user?.id != null)) {
+        localStorage.setItem('matrix_ton_user_id', (data.userId ?? data.user.id).toString());
         router.replace('/tables');
       } else {
         setNicknameError(data.error || 'Registration failed');

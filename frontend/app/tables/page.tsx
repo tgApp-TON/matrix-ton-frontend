@@ -1,100 +1,181 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { CanvasTableCard } from '@/components/tables/CanvasTableCard';
 import { ScrollButtons } from '@/components/ScrollButtons';
-import { Table, TABLE_PRICES } from '@/lib/types';
-import { Wallet, Users, TrendingUp, Table as TableIcon } from 'lucide-react';
+import { TABLE_PRICES } from '@/lib/types';
 
 export default function TablesPage() {
+  const router = useRouter();
   const [userTables, setUserTables] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string>(() => {
+  const [progress, setProgress] = useState(0);
+  const [userId, setUserId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('matrix_ton_user_id') || '1';
+      return localStorage.getItem('matrix_ton_user_id');
     }
-    return '1';
+    return null;
   });
 
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedId = localStorage.getItem('matrix_ton_user_id');
+      if (!storedId) {
+        router.replace('/register');
+      } else {
+        setUserId(storedId);
+      }
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (loading) {
+      setProgress(0);
+      progressIntervalRef.current = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 95) {
+            if (progressIntervalRef.current) {
+              clearInterval(progressIntervalRef.current);
+              progressIntervalRef.current = null;
+            }
+            return 95;
+          }
+          return prev + 2;
+        });
+      }, 50);
+    }
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    };
+  }, [loading]);
+
+  useEffect(() => {
+    if (!userId) return;
     const fetchTables = async () => {
       try {
         const response = await fetch(`/api/user/tables?userId=${userId}`);
         const data = await response.json();
-        
         if (data.success) {
           setUserTables(data.tables);
         }
       } catch (error) {
         console.error('Failed to fetch tables:', error);
       } finally {
+        setProgress(100);
         setLoading(false);
       }
     };
-
     fetchTables();
   }, [userId]);
 
   const activeTables = userTables.filter(t => t.status === 'ACTIVE');
-  const activeTableNumbers = activeTables.map(t => t.tableNumber);
-  const totalEarned = 156.8;
-  const totalReferrals = 47;
-  const totalCycles = userTables.reduce((sum, t) => sum + t.cycleNumber, 0);
 
   return (
     <div className="min-h-screen relative">
-      {process.env.NODE_ENV === 'development' && (
-        <button
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = '/dashboard';
+      {!loading && <ScrollButtons />}
+      <div className="w-full relative z-10" style={{ paddingTop: '70px' }}>
+        <div
+          className="grid grid-cols-2 pt-[90px] mb-12"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            width: 'fit-content',
+            margin: '0 auto',
+            gap: '0px',
           }}
-          className="fixed top-4 left-4 z-[99999] px-4 py-2 bg-red-500 text-white rounded text-sm"
         >
-          Reset Registration
-        </button>
-      )}
-      <ScrollButtons />
-      
-      <div className="container mx-auto p-4 max-w-5xl relative z-10">
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '24px',
-          maxWidth: '900px',
-          margin: '0 auto 0 calc(50% - 450px - 40px)',
-          padding: '0 40px',
-          marginBottom: '3rem'
-        }}>
           {loading ? (
-            <div className="col-span-2 text-center py-12" style={{ color: '#ffffff', fontSize: '2rem', fontWeight: 'bold' }}>
-              Loading tables...
+            <div
+              style={{
+                position: 'fixed',
+                top: '0',
+                left: '0',
+                right: '0',
+                bottom: '0',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 99999,
+                paddingTop: '0',
+                backgroundColor: 'transparent',
+              }}
+            >
+              <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white', marginBottom: '24px', textAlign: 'center' }}>Loading tables...</p>
+              <p style={{ fontSize: '1.5rem', color: 'white', marginBottom: '16px', textAlign: 'center' }}>{progress}%</p>
+              <div style={{ width: '250px', height: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '4px' }}>
+                <div
+                  style={{ width: `${progress}%`, height: '100%', backgroundColor: '#a855f7', borderRadius: '4px', transition: 'width 0.1s' }}
+                />
+              </div>
             </div>
-          ) : (
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((tableNumber) => {
-              const table = userTables.find(t => t.tableNumber === tableNumber);
-              const isActive = table ? table.status === 'ACTIVE' : false;
-              const price = TABLE_PRICES[tableNumber - 1];
-              const slots: [(any | null)?, (any | null)?, (any | null)?, (any | null)?] = table ? [
-                table.positions.find((p: any) => p.position === 1) || null,
-                table.positions.find((p: any) => p.position === 2) || null,
-                table.positions.find((p: any) => p.position === 3) || null,
-                table.positions.find((p: any) => p.position === 4) || null
-              ] : [null, null, null, null];
+          ) : userTables.length > 0 ? (
+            userTables.map((table, index) => {
+              const isActive = table.status === 'ACTIVE';
+              const price = TABLE_PRICES[table.tableNumber];
+              const positions = table.positions || [];
+              const slots: [(any | null)?, (any | null)?, (any | null)?, (any | null)?] = [
+                positions.find((p: any) => p.position === 1) || null,
+                positions.find((p: any) => p.position === 2) || null,
+                positions.find((p: any) => p.position === 3) || null,
+                positions.find((p: any) => p.position === 4) || null,
+              ];
+
+              // Check if previous table is active (or it's table 1)
+              const previousTable = userTables.find(t => t.tableNumber === table.tableNumber - 1);
+              const isUnlocked = table.tableNumber === 1 || previousTable?.status === 'ACTIVE';
+
+              const handleBuy = async () => {
+                try {
+                  const response = await fetch('/api/user/tables/buy', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      userId: parseInt(userId!, 10),
+                      tableNumber: table.tableNumber,
+                    }),
+                  });
+                  const data = await response.json();
+                  if (data.success) {
+                    // Refresh tables
+                    const refreshResponse = await fetch(`/api/user/tables?userId=${userId}`);
+                    const refreshData = await refreshResponse.json();
+                    if (refreshData.success) {
+                      setUserTables(refreshData.tables);
+                    }
+                  }
+                } catch (error) {
+                  console.error('Failed to buy table:', error);
+                }
+              };
 
               return (
-                <div key={tableNumber} className="w-full">
+                <div key={table.id} style={{ width: '44vw' }}>
                   <CanvasTableCard
-                    tableNumber={tableNumber}
+                    tableNumber={table.tableNumber}
                     price={price}
-                    cycles={table?.cycleNumber || 0}
+                    cycles={table.cycleNumber - 1}
                     slots={slots}
                     isActive={isActive}
+                    isUnlocked={isUnlocked}
+                    onBuy={handleBuy}
                   />
                 </div>
               );
             })
+          ) : (
+            <div className="col-span-2 text-center text-white text-xl py-12">
+              No tables found
+            </div>
           )}
         </div>
       </div>
