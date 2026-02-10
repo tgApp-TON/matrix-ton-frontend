@@ -54,7 +54,7 @@ export default function TablesPage() {
           ) : userTables.length > 0 ? (
             userTables.map((table) => {
               const isActive = table.status === 'ACTIVE';
-              const price = TABLE_PRICES[table.tableNumber - 1];
+              const price = TABLE_PRICES[table.tableNumber];
               const positions = table.positions || [];
               const slots: [(any | null)?, (any | null)?, (any | null)?, (any | null)?] = [
                 positions.find((p: any) => p.position === 1) || null,
