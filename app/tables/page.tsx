@@ -38,13 +38,13 @@ export default function TablesPage() {
     <div className="min-h-screen relative">
       <ScrollButtons />
       <div className="container mx-auto p-4 max-w-5xl relative z-10">
-        <div className="grid grid-cols-2 gap-3 max-w-full mx-auto px-2 mb-12" style={{ paddingTop: '90px' }}>
+        <div className="grid grid-cols-2 gap-3 max-w-full mx-auto px-2 mb-12" style={{ paddingTop: '90px', paddingLeft: '4px', paddingRight: '4px' }}>
           {loading ? (
             <div className="col-span-2 text-center text-white text-xl py-12">
               Loading tables...
             </div>
           ) : userTables.length > 0 ? (
-            userTables.map((table) => {
+            userTables.map((table, index) => {
               const isActive = table.status === 'ACTIVE';
               const price = TABLE_PRICES[table.tableNumber];
               const positions = table.positions || [];
@@ -55,6 +55,36 @@ export default function TablesPage() {
                 positions.find((p: any) => p.position === 4) || null,
               ];
 
+              // Check if previous table is active (or it's table 1)
+              const previousTable = userTables.find(t => t.tableNumber === table.tableNumber - 1);
+              const isUnlocked = table.tableNumber === 1 || previousTable?.status === 'ACTIVE';
+
+              const handleBuy = async () => {
+                try {
+                  const response = await fetch('/api/user/tables/buy', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      userId: parseInt(userId),
+                      tableNumber: table.tableNumber,
+                    }),
+                  });
+                  const data = await response.json();
+                  if (data.success) {
+                    // Refresh tables
+                    const refreshResponse = await fetch(`/api/user/tables?userId=${userId}`);
+                    const refreshData = await refreshResponse.json();
+                    if (refreshData.success) {
+                      setUserTables(refreshData.tables);
+                    }
+                  }
+                } catch (error) {
+                  console.error('Failed to buy table:', error);
+                }
+              };
+
               return (
                 <div key={table.id} className="w-full">
                   <CanvasTableCard
@@ -63,6 +93,8 @@ export default function TablesPage() {
                     cycles={table.cycleNumber}
                     slots={slots}
                     isActive={isActive}
+                    isUnlocked={isUnlocked}
+                    onBuy={handleBuy}
                   />
                 </div>
               );

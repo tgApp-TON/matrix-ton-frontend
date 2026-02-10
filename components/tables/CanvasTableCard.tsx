@@ -13,6 +13,8 @@ interface CanvasTableCardProps {
   cycles: number;
   slots: [Slot?, Slot?, Slot?, Slot?];
   isActive: boolean;
+  isUnlocked: boolean;
+  onBuy?: () => void;
 }
 
 export function CanvasTableCard({ 
@@ -20,7 +22,9 @@ export function CanvasTableCard({
   price, 
   cycles, 
   slots,
-  isActive 
+  isActive,
+  isUnlocked,
+  onBuy
 }: CanvasTableCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cardRef = useRef<any>(null);
@@ -30,10 +34,10 @@ export function CanvasTableCard({
     if (!canvasRef.current || !containerRef.current) return;
 
     const calculateSize = () => {
-      if (!containerRef.current) return { width: 495, height: 500 };
+      if (!containerRef.current) return { width: 495, height: 560 };
       
       const containerWidth = containerRef.current.clientWidth;
-      const aspectRatio = 500 / 495; // Almost square aspect ratio
+      const aspectRatio = 560 / 495; // Slightly taller aspect ratio
       const width = containerWidth;
       const height = width * aspectRatio;
       
@@ -75,9 +79,11 @@ export function CanvasTableCard({
           cyclesClosed: options.cyclesClosed ?? 12,
           slots: options.slots ?? [null, null, null, null],
           width: currentWidth,
-          height: options.height ?? 500,
+          height: options.height ?? 560,
           animate: options.animate ?? true,
           isActive: options.isActive ?? true,
+          isUnlocked: options.isUnlocked ?? false,
+          onBuy: options.onBuy,
           scale: this.scale,
         };
 
@@ -438,6 +444,63 @@ export function CanvasTableCard({
         ctx.textAlign = 'left';
       }
 
+      drawStatusBar() {
+        const ctx = this.ctx;
+        const { x, y, w, h } = this.card;
+        const H = this.opts.height;
+
+        const barY = y + h - 50 * this.scale;
+        const barH = 40 * this.scale;
+        const barX = x + 20 * this.scale;
+        const barW = w - 40 * this.scale;
+
+        // Background
+        const bgGradient = ctx.createLinearGradient(barX, barY, barX + barW, barY + barH);
+        if (this.opts.isActive) {
+          bgGradient.addColorStop(0, 'rgba(34, 197, 94, 0.2)');
+          bgGradient.addColorStop(1, 'rgba(34, 197, 94, 0.15)');
+        } else if (this.opts.isUnlocked) {
+          bgGradient.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
+          bgGradient.addColorStop(1, 'rgba(139, 92, 246, 0.15)');
+        } else {
+          bgGradient.addColorStop(0, 'rgba(60, 60, 70, 0.2)');
+          bgGradient.addColorStop(1, 'rgba(50, 50, 60, 0.15)');
+        }
+        ctx.fillStyle = bgGradient;
+        this.roundRect(ctx, barX, barY, barW, barH, 12 * this.scale);
+        ctx.fill();
+
+        // Border
+        if (this.opts.isActive) {
+          ctx.strokeStyle = 'rgba(34, 197, 94, 0.6)';
+        } else if (this.opts.isUnlocked) {
+          ctx.strokeStyle = 'rgba(139, 92, 246, 0.6)';
+        } else {
+          ctx.strokeStyle = 'rgba(100, 100, 110, 0.4)';
+        }
+        ctx.lineWidth = 2 * this.scale;
+        this.roundRect(ctx, barX, barY, barW, barH, 12 * this.scale);
+        ctx.stroke();
+
+        // Text
+        ctx.font = `700 ${24 * this.scale}px Inter, system-ui, Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        if (this.opts.isActive) {
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.95)';
+          ctx.fillText('Active', barX + barW / 2, barY + barH / 2);
+        } else if (this.opts.isUnlocked) {
+          ctx.fillStyle = 'rgba(168, 85, 247, 0.95)';
+          ctx.fillText('BUY', barX + barW / 2, barY + barH / 2);
+        } else {
+          ctx.fillStyle = 'rgba(160, 160, 170, 0.7)';
+          ctx.fillText('Locked', barX + barW / 2, barY + barH / 2);
+        }
+        
+        ctx.textAlign = 'left';
+      }
+
       draw(timeMs: number) {
         this.time = timeMs;
         this.drawCardShell(timeMs);
@@ -445,6 +508,7 @@ export function CanvasTableCard({
         this.drawSlots();
         this.drawTonBar();
         this.drawCycles();
+        this.drawStatusBar();
       }
 
       loop(ts: number) {
@@ -472,7 +536,9 @@ export function CanvasTableCard({
       animate: true,
       width,
       height,
-      isActive: isActive
+      isActive: isActive,
+      isUnlocked: isUnlocked,
+      onBuy: onBuy
     });
 
     // Use ResizeObserver to watch container size changes
@@ -482,15 +548,41 @@ export function CanvasTableCard({
 
     resizeObserver.observe(containerRef.current);
 
+    // Add click handler for BUY button
+    const handleClick = (e: MouseEvent) => {
+      if (!canvasRef.current || !isUnlocked || isActive || !onBuy) return;
+      
+      const rect = canvasRef.current.getBoundingClientRect();
+      const scale = width / 495;
+      const clickX = (e.clientX - rect.left) / (rect.width / width);
+      const clickY = (e.clientY - rect.top) / (rect.height / height);
+      
+      // Status bar area: bottom 50px scaled
+      const statusBarY = height - 50 * scale;
+      const statusBarH = 40 * scale;
+      
+      if (clickY >= statusBarY && clickY <= statusBarY + statusBarH) {
+        onBuy();
+      }
+    };
+
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.addEventListener('click', handleClick);
+    }
+
     return () => {
       resizeObserver.disconnect();
+      if (canvas) {
+        canvas.removeEventListener('click', handleClick);
+      }
       cardRef.current?.destroy();
     };
-  }, [tableNumber, price, cycles, slots, isActive]);
+  }, [tableNumber, price, cycles, slots, isActive, isUnlocked, onBuy, width, height]);
 
   return (
     <div ref={containerRef} className="w-full">
-      <canvas ref={canvasRef} className="w-full h-auto" />
+      <canvas ref={canvasRef} className="w-full h-auto" style={{ cursor: isUnlocked && !isActive ? 'pointer' : 'default' }} />
     </div>
   );
 }
