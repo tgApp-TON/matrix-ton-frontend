@@ -38,7 +38,7 @@ export default function TablesPage() {
     <div className="min-h-screen relative">
       <ScrollButtons />
       <div className="container mx-auto p-4 max-w-5xl relative z-10">
-        <div className="grid grid-cols-2 gap-4 md:gap-6 max-w-[900px] mx-auto px-2 md:px-4 mb-12">
+        <div className="grid grid-cols-2 gap-3 max-w-full mx-auto px-2 mb-12" style={{ paddingTop: '180px' }}>
           {loading ? (
             <div className="col-span-2 text-center text-white text-xl py-12">
               Loading tables...

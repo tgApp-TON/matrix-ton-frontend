@@ -27,23 +27,23 @@ export function ScrollButtons() {
   return (
     <>
       {/* Theme Button - TOP LEFT */}
-      <div style={{ position: 'fixed', top: '24px', left: '24px', zIndex: 99999, width: '128px', height: '128px' }}>
+      <div style={{ position: 'fixed', top: '24px', left: '24px', zIndex: 99999, width: '56px', height: '56px' }}>
         <button
           onClick={toggleTheme}
           style={{
-            width: '128px', height: '128px', borderRadius: '50%',
+            width: '56px', height: '56px', borderRadius: '50%',
             background: 'rgba(139, 92, 246, 0.2)', backdropFilter: 'blur(10px)',
             border: '1px solid rgba(139, 92, 246, 0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', transition: 'all 0.3s'
           }}
         >
-          {isDark ? <Sun size={48} className="text-purple-300" /> : <Moon size={48} className="text-purple-300" />}
+          {isDark ? <Sun size={24} className="text-purple-300" /> : <Moon size={24} className="text-purple-300" />}
         </button>
       </div>
 
       {/* Menu Button - TOP RIGHT */}
-      <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 99999, width: '128px', height: '128px' }}>
+      <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 99999, width: '56px', height: '56px' }}>
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           style={{
@@ -56,11 +56,11 @@ export function ScrollButtons() {
           }}
         >
           {isMenuOpen ? (
-            <X size={48} className="text-purple-300" />
+            <X size={24} className="text-purple-300" />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
               {[0,1,2].map(i => (
-                <div key={i} style={{ width: '56px', height: '6px', background: 'rgba(168, 85, 247, 0.9)', borderRadius: '10px' }} />
+                <div key={i} style={{ width: '28px', height: '3px', background: 'rgba(168, 85, 247, 0.9)', borderRadius: '10px' }} />
               ))}
             </div>
           )}
@@ -82,14 +82,14 @@ export function ScrollButtons() {
                 onClick={() => setIsMenuOpen(false)}
                 style={{
                   position: 'fixed', top: '24px', right: '24px',
-                  width: '128px', height: '128px', borderRadius: '50%',
+                  width: '56px', height: '56px', borderRadius: '50%',
                   background: 'rgba(139, 92, 246, 0.2)', backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(139, 92, 246, 0.4)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', zIndex: 100000
                 }}
               >
-                <X size={48} className="text-purple-300" />
+                <X size={24} className="text-purple-300" />
               </button>
 
               {/* Stats */}
