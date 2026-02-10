@@ -74,8 +74,9 @@ export default function TablesPage() {
             width: '100%',
             maxWidth: '100%',
             paddingTop: '90px',
-            paddingLeft: '8px',
-            paddingRight: '8px',
+            paddingLeft: '4px',
+            paddingRight: '4px',
+            marginLeft: '8px',
             marginBottom: '3rem',
           }}
         >
