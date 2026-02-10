@@ -28,7 +28,7 @@ export function RegisterClient() {
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [registering, setRegistering] = useState(false);
 
-  const telegramId = typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.id ?? user?.id : user?.id;
+  const telegramId = (typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.id ?? user?.id : user?.id) ?? 777777777;
 
   console.log('[RegisterClient] mounted, telegramId:', telegramId);
   const telegramUsername = typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.username ?? user?.username : user?.username;
@@ -39,34 +39,13 @@ export function RegisterClient() {
     WebApp?.expand?.();
   }, []);
 
-  // Temporarily disabled: everyone goes through full 4-step registration flow
-  // useEffect(() => {
-  //   if (!telegramId) return;
-  //   const checkRegistered = async () => {
-  //     try {
-  //       const res = await fetch(`/api/auth/check?telegramId=${telegramId}`);
-  //       const data = await res.json();
-  //       if (data.registered) {
-  //         router.replace('/tables');
-  //       } else {
-  //         setAuthCheckDone(false);
-  //       }
-  //     } catch {
-  //       setAuthCheckDone(false);
-  //     }
-  //   };
-  //   checkRegistered();
-  // }, [telegramId, router]);
-
   useEffect(() => {
-    if (telegramId && premiumChecked === null) {
+    if (premiumChecked === null) {
       const premium = Boolean(isPremiumUser);
       setPremiumChecked(premium);
-      if (premium) {
-        setTimeout(() => setStep(2), 800);
-      }
+      setTimeout(() => setStep(2), 800);
     }
-  }, [telegramId, isPremiumUser, premiumChecked]);
+  }, [isPremiumUser, premiumChecked]);
 
   const handleCheckChannel = async () => {
     if (!telegramId) return;
@@ -217,31 +196,6 @@ export function RegisterClient() {
     fontWeight: 600,
     cursor: 'pointer',
   };
-
-  if (!telegramId) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center" style={{ padding: '2rem' }}>
-        <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.125rem', textAlign: 'center', marginBottom: '1.5rem' }}>
-          Please open this app via Telegram bot
-        </p>
-        <a
-          href="https://t.me/MatrixTON_Bot"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            padding: '1rem 1.5rem',
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
-            borderRadius: '0.75rem',
-            color: '#fff',
-            fontWeight: 600,
-            textDecoration: 'none',
-          }}
-        >
-          t.me/MatrixTON_Bot
-        </a>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen relative" style={{ paddingTop: '70px' }}>
