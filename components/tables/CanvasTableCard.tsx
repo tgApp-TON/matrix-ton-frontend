@@ -57,6 +57,7 @@ export function CanvasTableCard({
       time: number;
       card: any;
       animationId?: number;
+      scale: number;
 
       constructor(canvas: HTMLCanvasElement, options: any) {
         this.canvas = canvas;
@@ -64,15 +65,20 @@ export function CanvasTableCard({
         this.dpr = Math.max(1, window.devicePixelRatio || 1);
         this.time = 0;
 
+        const baseWidth = 495;
+        const currentWidth = options.width ?? 495;
+        this.scale = currentWidth / baseWidth;
+
         this.opts = {
           table: options.table ?? 1,
           ton: options.ton ?? 10,
           cyclesClosed: options.cyclesClosed ?? 12,
           slots: options.slots ?? [null, null, null, null],
-          width: options.width ?? 495,
+          width: currentWidth,
           height: options.height ?? 770,
           animate: options.animate ?? true,
           isActive: options.isActive ?? true,
+          scale: this.scale,
         };
 
         this.resize(this.opts.width, this.opts.height);
@@ -88,6 +94,9 @@ export function CanvasTableCard({
       resize(width: number, height: number) {
         this.opts.width = width;
         this.opts.height = height;
+        const baseWidth = 495;
+        this.scale = width / baseWidth;
+        this.opts.scale = this.scale;
 
         this.canvas.width = Math.floor(width * this.dpr);
         this.canvas.height = Math.floor(height * this.dpr);
@@ -144,7 +153,7 @@ export function CanvasTableCard({
         ctx.save();
         ctx.translate(x, y);
         ctx.strokeStyle = this.opts.isActive ? 'rgba(160, 235, 255, 0.95)' : 'rgba(100, 100, 120, 0.5)';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 * this.scale;
 
         const w = s;
         const h = s * 0.72;
@@ -171,7 +180,7 @@ export function CanvasTableCard({
 
         if (this.opts.isActive) {
           ctx.shadowColor = 'rgba(120,220,255,0.9)';
-          ctx.shadowBlur = 18;
+          ctx.shadowBlur = 18 * this.scale;
           ctx.stroke();
         }
         ctx.restore();
@@ -190,8 +199,8 @@ export function CanvasTableCard({
         const baseH = H * 0.045;
 
         const layers = [
-          { scale: 1.08, yOff: 18, alpha: 0.25 },
-          { scale: 1.00, yOff: 9, alpha: 0.35 },
+          { scale: 1.08, yOff: 18 * this.scale, alpha: 0.25 },
+          { scale: 1.00, yOff: 9 * this.scale, alpha: 0.35 },
           { scale: 0.92, yOff: 0, alpha: 0.45 },
         ];
 
@@ -206,14 +215,14 @@ export function CanvasTableCard({
           g.addColorStop(0.5, `rgba(60, 40, 180, ${L.alpha})`);
           g.addColorStop(1, `rgba(120, 40, 200, ${L.alpha})`);
           ctx.fillStyle = g;
-          this.roundRect(ctx, x, y, lw, lh, 12);
+          this.roundRect(ctx, x, y, lw, lh, 12 * this.scale);
           ctx.fill();
 
           const pulse = 0.6 + 0.4 * Math.sin(t * 0.003 + idx * 0.8);
           ctx.strokeStyle = this.getAnimatedGradient(ctx, x, y, lw, lh, t);
           ctx.globalAlpha = pulse * 0.7;
-          ctx.lineWidth = 2;
-          this.roundRect(ctx, x, y, lw, lh, 12);
+          ctx.lineWidth = 2 * this.scale;
+          this.roundRect(ctx, x, y, lw, lh, 12 * this.scale);
           ctx.stroke();
           ctx.globalAlpha = 1;
         });
@@ -239,10 +248,10 @@ export function CanvasTableCard({
         if (this.opts.isActive) {
           ctx.save();
           ctx.shadowColor = 'rgba(113, 83, 255, 0.6)';
-          ctx.shadowBlur = 30;
-          this.roundRect(ctx, x, y, w, h, 42);
+          ctx.shadowBlur = 30 * this.scale;
+          this.roundRect(ctx, x, y, w, h, 42 * this.scale);
           ctx.strokeStyle = 'rgba(130,120,255,0.25)';
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 1 * this.scale;
           ctx.stroke();
           ctx.restore();
         }
@@ -257,22 +266,22 @@ export function CanvasTableCard({
           fill.addColorStop(1, 'rgba(30, 30, 40, 0.6)');
         }
         ctx.fillStyle = fill;
-        this.roundRect(ctx, x, y, w, h, 42);
+        this.roundRect(ctx, x, y, w, h, 42 * this.scale);
         ctx.fill();
 
         if (this.opts.isActive) {
           const pulse = 0.7 + 0.3 * Math.sin(t * 0.002);
           ctx.strokeStyle = this.getAnimatedGradient(ctx, x, y, w, h, t);
           ctx.globalAlpha = pulse;
-          ctx.lineWidth = 3;
-          this.roundRect(ctx, x, y, w, h, 42);
+          ctx.lineWidth = 3 * this.scale;
+          this.roundRect(ctx, x, y, w, h, 42 * this.scale);
           ctx.stroke();
           ctx.globalAlpha = 1;
 
           ctx.shadowColor = 'rgba(139, 92, 246, 0.8)';
-          ctx.shadowBlur = 40;
-          ctx.lineWidth = 2;
-          this.roundRect(ctx, x, y, w, h, 42);
+          ctx.shadowBlur = 40 * this.scale;
+          ctx.lineWidth = 2 * this.scale;
+          this.roundRect(ctx, x, y, w, h, 42 * this.scale);
           ctx.stroke();
           ctx.shadowBlur = 0;
         }
@@ -280,12 +289,12 @@ export function CanvasTableCard({
         if (this.opts.isActive) {
           const dustY = y + h * 0.70;
           for (let i = 0; i < 50; i++) {
-            const px = x + 12 + ((i * 37.17) % (w - 24));
-            const py = dustY + ((i * 53.91 + (t * 0.02)) % (h - (dustY - y) - 12));
+            const px = x + 12 * this.scale + ((i * 37.17 * this.scale) % (w - 24 * this.scale));
+            const py = dustY + ((i * 53.91 * this.scale + (t * 0.02)) % (h - (dustY - y) - 12 * this.scale));
             const a = 0.15 + ((i * 0.07) % 0.3);
             ctx.fillStyle = i % 3 === 0 ? `rgba(90,220,255,${a})` : `rgba(200,120,255,${a})`;
             ctx.beginPath();
-            ctx.arc(px, py, (i % 5) * 0.18 + 0.6, 0, Math.PI * 2);
+            ctx.arc(px, py, ((i % 5) * 0.18 + 0.6) * this.scale, 0, Math.PI * 2);
             ctx.fill();
           }
         }
@@ -296,32 +305,32 @@ export function CanvasTableCard({
         const { x, y, w } = this.card;
 
         const iconX = x + w * 0.09;
-        const iconY = y + 45;
-        this.drawDiamondIcon(ctx, iconX, iconY, 40);
+        const iconY = y + 45 * this.scale;
+        this.drawDiamondIcon(ctx, iconX, iconY, 40 * this.scale);
 
-        ctx.font = '700 38px Inter, system-ui, Arial, sans-serif';
+        ctx.font = `700 ${38 * this.scale}px Inter, system-ui, Arial, sans-serif`;
         ctx.fillStyle = this.opts.isActive ? 'rgba(240,248,255,0.95)' : 'rgba(160,160,170,0.7)';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`Table ${this.opts.table}`, x + w * 0.35, y + 45);
+        ctx.fillText(`Table ${this.opts.table}`, x + w * 0.35, y + 45 * this.scale);
       }
 
       drawSlots() {
         const ctx = this.ctx;
         const { x, y, w } = this.card;
 
-        const topY = y + 100;
-        const slotW = (w - 60) / 2;
-        const slotH = 80;
-        const gap = 15;
+        const topY = y + 100 * this.scale;
+        const slotW = (w - 60 * this.scale) / 2;
+        const slotH = 80 * this.scale;
+        const gap = 15 * this.scale;
 
         const slotPositions = [
-          { x: x + 20, y: topY },
-          { x: x + 20 + slotW + gap, y: topY },
-          { x: x + 20, y: topY + slotH + 12 },
-          { x: x + 20 + slotW + gap, y: topY + slotH + 12 },
+          { x: x + 20 * this.scale, y: topY },
+          { x: x + 20 * this.scale + slotW + gap, y: topY },
+          { x: x + 20 * this.scale, y: topY + slotH + 12 * this.scale },
+          { x: x + 20 * this.scale + slotW + gap, y: topY + slotH + 12 * this.scale },
         ];
 
-        ctx.font = '600 18px Inter, system-ui, Arial, sans-serif';
+        ctx.font = `600 ${18 * this.scale}px Inter, system-ui, Arial, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -339,28 +348,28 @@ export function CanvasTableCard({
           }
 
           ctx.fillStyle = fill;
-          this.roundRect(ctx, s.x, s.y, slotW, slotH, 16);
+          this.roundRect(ctx, s.x, s.y, slotW, slotH, 16 * this.scale);
           ctx.fill();
 
           if (filled && this.opts.isActive) {
             const pulse = 0.6 + 0.4 * Math.sin(this.time * 0.003 + i * 0.5);
             ctx.strokeStyle = this.getAnimatedGradient(ctx, s.x, s.y, slotW, slotH, this.time + i * 500);
             ctx.globalAlpha = pulse;
-            ctx.lineWidth = 2.5;
-            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16);
+            ctx.lineWidth = 2.5 * this.scale;
+            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16 * this.scale);
             ctx.stroke();
             ctx.globalAlpha = 1;
 
             ctx.shadowColor = 'rgba(34, 197, 94, 0.6)';
-            ctx.shadowBlur = 15;
-            ctx.lineWidth = 1.5;
-            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16);
+            ctx.shadowBlur = 15 * this.scale;
+            ctx.lineWidth = 1.5 * this.scale;
+            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16 * this.scale);
             ctx.stroke();
             ctx.shadowBlur = 0;
           } else if (!filled || !this.opts.isActive) {
             ctx.strokeStyle = this.opts.isActive ? 'rgba(89,223,255,0.4)' : 'rgba(60,60,70,0.3)';
-            ctx.lineWidth = 1.5;
-            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16);
+            ctx.lineWidth = 1.5 * this.scale;
+            this.roundRect(ctx, s.x, s.y, slotW, slotH, 16 * this.scale);
             ctx.stroke();
           }
 
@@ -380,10 +389,10 @@ export function CanvasTableCard({
         const ctx = this.ctx;
         const { x, y, w } = this.card;
 
-        const barX = x + 20;
-        const barY = y + 295;
-        const barW = w - 40;
-        const barH = 70;
+        const barX = x + 20 * this.scale;
+        const barY = y + 295 * this.scale;
+        const barW = w - 40 * this.scale;
+        const barH = 70 * this.scale;
 
         const g = ctx.createLinearGradient(barX, barY, barX + barW, barY);
         if (this.opts.isActive) {
@@ -395,20 +404,20 @@ export function CanvasTableCard({
           g.addColorStop(1, 'rgba(50,50,60,0.6)');
         }
         ctx.fillStyle = g;
-        this.roundRect(ctx, barX, barY, barW, barH, 16);
+        this.roundRect(ctx, barX, barY, barW, barH, 16 * this.scale);
         ctx.fill();
 
         if (this.opts.isActive) {
           const pulse = 0.7 + 0.3 * Math.sin(this.time * 0.0025);
           ctx.strokeStyle = this.getAnimatedGradient(ctx, barX, barY, barW, barH, this.time);
           ctx.globalAlpha = pulse;
-          ctx.lineWidth = 2.5;
-          this.roundRect(ctx, barX, barY, barW, barH, 16);
+          ctx.lineWidth = 2.5 * this.scale;
+          this.roundRect(ctx, barX, barY, barW, barH, 16 * this.scale);
           ctx.stroke();
           ctx.globalAlpha = 1;
         }
 
-        ctx.font = '700 42px Inter, system-ui, Arial, sans-serif';
+        ctx.font = `700 ${42 * this.scale}px Inter, system-ui, Arial, sans-serif`;
         ctx.fillStyle = this.opts.isActive ? 'rgba(235,245,255,0.98)' : 'rgba(160,160,170,0.7)';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -420,11 +429,11 @@ export function CanvasTableCard({
         const ctx = this.ctx;
         const { x, y, w } = this.card;
 
-        ctx.font = '500 28px Inter, system-ui, Arial, sans-serif';
+        ctx.font = `500 ${28 * this.scale}px Inter, system-ui, Arial, sans-serif`;
         ctx.fillStyle = this.opts.isActive ? 'rgba(234,244,255,0.95)' : 'rgba(160,160,170,0.7)';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`Cycles closed: ${this.opts.cyclesClosed}`, x + w / 2, y + 400);
+        ctx.fillText(`Cycles closed: ${this.opts.cyclesClosed}`, x + w / 2, y + 400 * this.scale);
         ctx.textAlign = 'left';
       }
 
