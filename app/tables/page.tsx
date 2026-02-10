@@ -68,11 +68,12 @@ export default function TablesPage() {
       {!loading && <ScrollButtons />}
       <div className="container mx-auto p-4 max-w-5xl relative z-10">
         <div
-          className="grid grid-cols-2 gap-3 pt-[90px] mb-12"
+          className="grid grid-cols-2 pt-[90px] mb-12"
           style={{
             margin: '0 auto',
-            padding: '0 2px',
-            width: 'calc(100% - 4px)',
+            padding: '0',
+            width: '100%',
+            gap: '4px',
           }}
         >
           {loading ? (
