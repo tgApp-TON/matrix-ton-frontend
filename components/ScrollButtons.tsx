@@ -27,7 +27,7 @@ export function ScrollButtons() {
   return (
     <>
       {/* Theme Button - TOP LEFT */}
-      <div style={{ position: 'fixed', top: '24px', left: '24px', zIndex: 99999, width: '56px', height: '56px' }}>
+      <div style={{ position: 'fixed', top: '12px', left: '12px', zIndex: 99999, width: '56px', height: '56px' }}>
         <button
           onClick={toggleTheme}
           style={{
@@ -43,7 +43,7 @@ export function ScrollButtons() {
       </div>
 
       {/* Menu Button - TOP RIGHT */}
-      <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 99999, width: '56px', height: '56px' }}>
+      <div style={{ position: 'fixed', top: '12px', right: '12px', zIndex: 99999, width: '56px', height: '56px' }}>
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           style={{
@@ -81,7 +81,7 @@ export function ScrollButtons() {
               <button
                 onClick={() => setIsMenuOpen(false)}
                 style={{
-                  position: 'fixed', top: '24px', right: '24px',
+                  position: 'fixed', top: '12px', right: '12px',
                   width: '56px', height: '56px', borderRadius: '50%',
                   background: 'rgba(139, 92, 246, 0.2)', backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(139, 92, 246, 0.4)',

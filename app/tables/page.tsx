@@ -66,14 +66,14 @@ export default function TablesPage() {
   return (
     <div className="min-h-screen relative">
       {!loading && <ScrollButtons />}
-      <div className="container mx-auto p-4 max-w-5xl relative z-10">
+      <div className="container mx-auto p-4 max-w-5xl relative z-10" style={{ paddingTop: '70px' }}>
         <div
           className="grid grid-cols-2 pt-[90px] mb-12"
           style={{
             margin: '0 auto',
-            padding: '0',
+            padding: '0 2px',
             width: '100%',
-            gap: '4px',
+            gap: '2px',
           }}
         >
           {loading ? (
