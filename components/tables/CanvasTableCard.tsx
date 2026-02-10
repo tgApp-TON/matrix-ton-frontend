@@ -553,12 +553,14 @@ export function CanvasTableCard({
       if (!canvasRef.current || !isUnlocked || isActive || !onBuy) return;
       
       const rect = canvasRef.current.getBoundingClientRect();
-      const scale = width / 495;
-      const clickX = (e.clientX - rect.left) / (rect.width / width);
-      const clickY = (e.clientY - rect.top) / (rect.height / height);
+      const currentWidth = cardRef.current?.opts?.width || 495;
+      const currentHeight = cardRef.current?.opts?.height || 560;
+      const scale = currentWidth / 495;
+      const clickX = (e.clientX - rect.left) / (rect.width / currentWidth);
+      const clickY = (e.clientY - rect.top) / (rect.height / currentHeight);
       
       // Status bar area: bottom 50px scaled
-      const statusBarY = height - 50 * scale;
+      const statusBarY = currentHeight - 50 * scale;
       const statusBarH = 40 * scale;
       
       if (clickY >= statusBarY && clickY <= statusBarY + statusBarH) {
@@ -578,7 +580,7 @@ export function CanvasTableCard({
       }
       cardRef.current?.destroy();
     };
-  }, [tableNumber, price, cycles, slots, isActive, isUnlocked, onBuy, width, height]);
+  }, [tableNumber, price, cycles, slots, isActive, isUnlocked, onBuy]);
 
   return (
     <div ref={containerRef} className="w-full">
