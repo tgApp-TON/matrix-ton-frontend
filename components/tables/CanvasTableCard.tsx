@@ -30,10 +30,10 @@ export function CanvasTableCard({
     if (!canvasRef.current || !containerRef.current) return;
 
     const calculateSize = () => {
-      if (!containerRef.current) return { width: 495, height: 770 };
+      if (!containerRef.current) return { width: 495, height: 500 };
       
       const containerWidth = containerRef.current.clientWidth;
-      const aspectRatio = 770 / 495; // Original height / width ratio
+      const aspectRatio = 500 / 495; // Almost square aspect ratio
       const width = containerWidth;
       const height = width * aspectRatio;
       
@@ -75,7 +75,7 @@ export function CanvasTableCard({
           cyclesClosed: options.cyclesClosed ?? 12,
           slots: options.slots ?? [null, null, null, null],
           width: currentWidth,
-          height: options.height ?? 770,
+          height: options.height ?? 500,
           animate: options.animate ?? true,
           isActive: options.isActive ?? true,
           scale: this.scale,
@@ -433,7 +433,8 @@ export function CanvasTableCard({
         ctx.fillStyle = this.opts.isActive ? 'rgba(234,244,255,0.95)' : 'rgba(160,160,170,0.7)';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`Cycles closed: ${this.opts.cyclesClosed}`, x + w / 2, y + 400 * this.scale);
+        // Position cycles text right after the TON bar (barY + barH + small gap)
+        ctx.fillText(`Cycles closed: ${this.opts.cyclesClosed}`, x + w / 2, y + 295 * this.scale + 70 * this.scale + 20 * this.scale);
         ctx.textAlign = 'left';
       }
 
