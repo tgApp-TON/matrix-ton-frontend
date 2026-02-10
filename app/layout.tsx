@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { TelegramProvider } from "@/components/providers/TelegramProvider";
+import { TonConnectProvider } from "@/components/providers/TonConnectProvider";
 import { AnimatedBackground } from '@/components/layout/AnimatedBackground';
 import { ScrollIndicator } from '@/components/ui/ScrollIndicator';
 
@@ -30,7 +31,9 @@ export default function RootLayout({
         <AnimatedBackground />
         <div className="stars-bg" />
         <TelegramProvider>
-          {children}
+          <TonConnectProvider>
+            {children}
+          </TonConnectProvider>
         </TelegramProvider>
         <ScrollIndicator />
       </body>
