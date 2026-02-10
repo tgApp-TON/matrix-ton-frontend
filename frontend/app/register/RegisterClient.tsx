@@ -28,8 +28,9 @@ export function RegisterClient() {
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [registering, setRegistering] = useState(false);
 
-  // When opened in browser (no Telegram WebApp), use mock id for testing
-  const telegramId = (typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.id ?? user?.id : user?.id) ?? 999999999;
+  // When opened in browser (no Telegram WebApp), use mock id for testing (unique per session so flow won't be skipped)
+  const [mockId] = useState(() => Date.now());
+  const telegramId = (typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.id ?? user?.id : user?.id) ?? mockId;
   const telegramUsername = typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.username ?? user?.username : user?.username;
   const isPremiumUser = typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.is_premium ?? isPremium : isPremium;
 
