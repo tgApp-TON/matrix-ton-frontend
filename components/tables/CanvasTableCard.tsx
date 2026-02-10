@@ -24,9 +24,30 @@ export function CanvasTableCard({
 }: CanvasTableCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cardRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !containerRef.current) return;
+
+    const calculateSize = () => {
+      if (!containerRef.current) return { width: 495, height: 770 };
+      
+      const containerWidth = containerRef.current.clientWidth;
+      const aspectRatio = 770 / 495; // Original height / width ratio
+      const width = containerWidth;
+      const height = width * aspectRatio;
+      
+      return { width, height };
+    };
+
+    const updateCanvasSize = () => {
+      if (!cardRef.current) return;
+      const { width, height } = calculateSize();
+      cardRef.current.resize(width, height);
+    };
+
+    // Initial size calculation
+    const { width, height } = calculateSize();
 
     class TonTableCard {
       canvas: HTMLCanvasElement;
@@ -439,15 +460,27 @@ export function CanvasTableCard({
       cyclesClosed: cycles,
       slots: slotsData,
       animate: true,
-      width: 495,
-      height: 770,
+      width,
+      height,
       isActive: isActive
     });
 
+    // Use ResizeObserver to watch container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      updateCanvasSize();
+    });
+
+    resizeObserver.observe(containerRef.current);
+
     return () => {
+      resizeObserver.disconnect();
       cardRef.current?.destroy();
     };
   }, [tableNumber, price, cycles, slots, isActive]);
 
-  return <canvas ref={canvasRef} className="w-full h-auto" />;
+  return (
+    <div ref={containerRef} className="w-full">
+      <canvas ref={canvasRef} className="w-full h-auto" />
+    </div>
+  );
 }
