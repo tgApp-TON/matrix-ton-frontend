@@ -141,7 +141,7 @@ export function RegisterClient() {
       });
       const data = await res.json();
       console.log('Register response status:', res.status);
-      console.log('Register response data:', data);
+      console.log('Register response data:', JSON.stringify(data));
       if (data.success && (data.userId != null || data.user?.id != null)) {
         localStorage.setItem('matrix_ton_user_id', (data.userId ?? data.user.id).toString());
         router.replace('/tables');
