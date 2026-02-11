@@ -47,15 +47,28 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === '23505') {
-        const { data: existingUser } = await supabase
+        // Try find by telegramId first
+        const { data: byTelegram } = await supabase
           .from('User')
           .select()
           .eq('telegramId', String(telegramId))
           .single();
 
-        if (existingUser) {
-          return NextResponse.json({ success: true, user: existingUser });
+        if (byTelegram) {
+          return NextResponse.json({ success: true, user: byTelegram });
         }
+
+        // Try find by nickname
+        const { data: byNickname } = await supabase
+          .from('User')
+          .select()
+          .eq('nickname', nickname)
+          .single();
+
+        if (byNickname) {
+          return NextResponse.json({ success: false, error: 'Nickname already taken' }, { status: 400 });
+        }
+
         return NextResponse.json({ error: 'User already exists' }, { status: 400 });
       }
       console.error('Registration error:', error);
