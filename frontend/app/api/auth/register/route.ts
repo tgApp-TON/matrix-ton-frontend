@@ -13,6 +13,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user already exists by telegramId
+    const { data: existingUsers } = await supabase
+      .from('User')
+      .select('*')
+      .eq('telegramId', String(telegramId));
+
+    if (existingUsers && existingUsers.length > 0) {
+      return NextResponse.json({ success: true, user: existingUsers[0] });
+    }
+
+    // referrerId defaults to 1 (MASTER)
     let referrerId = 1;
     if (referralCode && referralCode !== 'MASTER') {
       const { data: referrer } = await supabase
@@ -46,29 +57,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      if (error.code === '23505') {
-        // Try by telegramId first
-        const { data: users } = await supabase
-          .from('User')
-          .select('*')
-          .eq('telegramId', String(telegramId));
-
-        if (users && users.length > 0) {
-          return NextResponse.json({ success: true, user: users[0] });
-        }
-
-        // Try by nickname
-        const { data: byNickname } = await supabase
-          .from('User')
-          .select('*')
-          .eq('nickname', nickname);
-
-        if (byNickname && byNickname.length > 0) {
-          return NextResponse.json({ success: true, user: byNickname[0] });
-        }
-
-        return NextResponse.json({ error: 'Could not find existing user' }, { status: 400 });
-      }
       console.error('Registration error:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
