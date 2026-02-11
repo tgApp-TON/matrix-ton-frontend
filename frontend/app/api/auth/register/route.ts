@@ -47,27 +47,24 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === '23505') {
-        const { data: users, error: lookupError } = await supabase
+        // Try by telegramId first
+        const { data: users } = await supabase
           .from('User')
           .select('*')
           .eq('telegramId', String(telegramId));
-
-        console.log('All users with telegramId:', JSON.stringify(users), 'error:', JSON.stringify(lookupError));
 
         if (users && users.length > 0) {
           return NextResponse.json({ success: true, user: users[0] });
         }
 
-        // Try with numeric telegramId
-        const { data: users2 } = await supabase
+        // Try by nickname
+        const { data: byNickname } = await supabase
           .from('User')
           .select('*')
-          .eq('telegramId', Number(telegramId));
+          .eq('nickname', nickname);
 
-        console.log('Users with numeric telegramId:', JSON.stringify(users2));
-
-        if (users2 && users2.length > 0) {
-          return NextResponse.json({ success: true, user: users2[0] });
+        if (byNickname && byNickname.length > 0) {
+          return NextResponse.json({ success: true, user: byNickname[0] });
         }
 
         return NextResponse.json({ error: 'Could not find existing user' }, { status: 400 });
