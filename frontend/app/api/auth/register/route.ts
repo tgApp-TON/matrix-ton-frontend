@@ -47,11 +47,12 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === '23505') {
-        // Try find by telegramId first
+        console.log('23505 error, looking up telegramId:', telegramId, 'type:', typeof telegramId);
+        // Try find by telegramId first (string and number formats)
         const { data: byTelegram } = await supabase
           .from('User')
           .select()
-          .eq('telegramId', String(telegramId))
+          .or(`telegramId.eq.${String(telegramId)},telegramId.eq.${Number(telegramId)}`)
           .single();
 
         if (byTelegram) {
