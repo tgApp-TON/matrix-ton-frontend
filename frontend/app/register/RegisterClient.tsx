@@ -156,6 +156,7 @@ export function RegisterClient() {
     }
   };
 
+  // Step 4: if wallet is already connected, skip connect UI and register with existing tonAddress
   useEffect(() => {
     if (step === 4 && tonAddress && nickname && nicknameAvailable && !registering) {
       handleRegister();

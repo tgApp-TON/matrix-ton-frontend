@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Sun, Moon } from 'lucide-react';
+import { X, Sun, Moon, Wallet } from 'lucide-react';
 import { useTonConnectUI, useTonAddress } from '@tonconnect/ui-react';
 import { AnimatedBackground } from '@/components/layout/AnimatedBackground';
 
@@ -107,28 +107,50 @@ export function ScrollButtons() {
                 </div>
               </div>
 
-              {/* Wallet: custom button opens TonConnect modal (connect / switch / disconnect) */}
+              {/* Wallet: icon + Connect or address; Disconnect link when connected */}
               <div className="flex flex-col mb-8">
                 <div style={{ fontSize: '1.2rem', color: 'white', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
                   Wallet
                 </div>
-                <button
-                  onClick={() => tonConnectUI.openModal()}
-                  style={{
-                    background: '#a855f7',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.75rem',
-                    padding: '12px 24px',
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    width: '100%',
-                    marginTop: '8px'
-                  }}
-                >
-                  {tonAddress ? `${tonAddress.slice(0, 6)}...${tonAddress.slice(-4)}` : 'Connect Wallet'}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                  <button
+                    onClick={() => tonConnectUI.openModal()}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      background: 'transparent',
+                      color: '#a855f7',
+                      border: '1px solid rgba(168, 85, 247, 0.5)',
+                      borderRadius: '0.75rem',
+                      padding: '12px 20px',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      width: '100%',
+                    }}
+                  >
+                    <Wallet size={20} style={{ color: '#a855f7', flexShrink: 0 }} />
+                    {tonAddress ? `${tonAddress.slice(0, 6)}...${tonAddress.slice(-4)}` : 'Connect Wallet'}
+                  </button>
+                  {tonAddress && (
+                    <button
+                      type="button"
+                      onClick={() => tonConnectUI.disconnect()}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        fontSize: '0.8rem',
+                        color: 'rgba(255,255,255,0.6)',
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      Disconnect
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Navigation */}
