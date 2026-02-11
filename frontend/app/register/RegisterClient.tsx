@@ -43,7 +43,6 @@ export function RegisterClient() {
     if (premiumChecked === null) {
       const premium = Boolean(isPremiumUser);
       setPremiumChecked(premium);
-      setTimeout(() => setStep(2), 800);
     }
   }, [isPremiumUser, premiumChecked]);
 
@@ -54,9 +53,6 @@ export function RegisterClient() {
       const res = await fetch(`/api/auth/check-channel?telegramId=${telegramId}`);
       const data = await res.json();
       setChannelSubscribed(data.subscribed);
-      if (data.subscribed) {
-        setTimeout(() => setStep(3), 600);
-      }
     } catch {
       setChannelSubscribed(false);
     } finally {
@@ -197,6 +193,18 @@ export function RegisterClient() {
     cursor: 'pointer',
   };
 
+  const continueButtonStyle: React.CSSProperties = {
+    background: '#a855f7',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '0.75rem',
+    padding: '12px 32px',
+    fontSize: '1rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    marginTop: '1rem',
+  };
+
   return (
     <div className="min-h-screen relative" style={{ paddingTop: '70px' }}>
       <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
@@ -269,6 +277,11 @@ export function RegisterClient() {
                 </div>
               </div>
             )}
+            {premiumChecked !== null && (
+              <button onClick={() => setStep(2)} style={continueButtonStyle}>
+                Continue →
+              </button>
+            )}
           </div>
         )}
 
@@ -306,6 +319,11 @@ export function RegisterClient() {
               <button onClick={handleCheckChannel} disabled={checkingChannel} style={buttonStyle}>
                 {checkingChannel ? 'Checking...' : 'Check'}
               </button>
+              {channelSubscribed === true && (
+                <button onClick={() => setStep(3)} style={continueButtonStyle}>
+                  Continue →
+                </button>
+              )}
             </div>
           </div>
         )}
