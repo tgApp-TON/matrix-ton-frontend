@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { X, Sun, Moon } from 'lucide-react';
-import { TonConnectButton, useTonAddress } from '@tonconnect/ui-react';
+import { useTonConnectUI, useTonAddress } from '@tonconnect/ui-react';
 import { AnimatedBackground } from '@/components/layout/AnimatedBackground';
 
 export function ScrollButtons() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
   const [userTables, setUserTables] = useState<any[]>([]);
+  const [tonConnectUI] = useTonConnectUI();
   const tonAddress = useTonAddress();
 
   const toggleTheme = () => {
@@ -106,19 +107,28 @@ export function ScrollButtons() {
                 </div>
               </div>
 
-              {/* Wallet: always show TonConnectButton (connect / switch / disconnect via TonConnect UI) */}
+              {/* Wallet: custom button opens TonConnect modal (connect / switch / disconnect) */}
               <div className="flex flex-col mb-8">
                 <div style={{ fontSize: '1.2rem', color: 'white', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
                   Wallet
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start' }}>
-                  {tonAddress && (
-                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', fontFamily: 'monospace' }}>
-                      {tonAddress.slice(0, 6)}...{tonAddress.slice(-4)}
-                    </span>
-                  )}
-                  <TonConnectButton />
-                </div>
+                <button
+                  onClick={() => tonConnectUI.openModal()}
+                  style={{
+                    background: '#a855f7',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.75rem',
+                    padding: '12px 24px',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    width: '100%',
+                    marginTop: '8px'
+                  }}
+                >
+                  {tonAddress ? `${tonAddress.slice(0, 6)}...${tonAddress.slice(-4)}` : 'Connect Wallet'}
+                </button>
               </div>
 
               {/* Navigation */}
