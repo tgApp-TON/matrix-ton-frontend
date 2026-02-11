@@ -60,10 +60,6 @@ export function RegisterClient() {
     }
   };
 
-  const handleOpenChannel = () => {
-    WebApp?.openTelegramLink?.('https://t.me/MatrixTON_Official');
-  };
-
   const checkNicknameAvailability = async () => {
     if (!nickname || nickname.length < 3 || nickname.length > 20 || !/^[a-zA-Z0-9_]+$/.test(nickname)) {
       setNicknameError('3-20 characters, letters, numbers, underscore only');
@@ -308,14 +304,11 @@ export function RegisterClient() {
               >
                 {channelSubscribed ? <Check size={24} style={{ color: '#22c55e' }} /> : <X size={24} style={{ color: '#ef4444' }} />}
                 <p style={{ margin: 0, color: '#fff', fontWeight: 600 }}>
-                  {channelSubscribed ? 'Subscribed' : 'Not subscribed yet'}
+                  {channelSubscribed ? 'Subscribed ✓' : 'Not subscribed yet'}
                 </p>
               </div>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <button onClick={handleOpenChannel} style={{ ...buttonStyle, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(139, 92, 246, 0.5)' }}>
-                Open @MatrixTON_Official
-              </button>
               <button onClick={handleCheckChannel} disabled={checkingChannel} style={buttonStyle}>
                 {checkingChannel ? 'Checking...' : 'Check'}
               </button>
