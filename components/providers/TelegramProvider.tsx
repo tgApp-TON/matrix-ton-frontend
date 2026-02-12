@@ -77,13 +77,13 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     initTelegram();
 
     const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
-    if (tg?.onEvent) {
-      tg.onEvent('viewport_changed', initTelegram);
+    if ((tg as any)?.onEvent) {
+      (tg as any).onEvent('viewport_changed', initTelegram);
     }
 
     return () => {
       if (retryTimeout) clearTimeout(retryTimeout);
-      if (tg?.offEvent) tg.offEvent('viewport_changed', initTelegram);
+      if ((tg as any)?.offEvent) (tg as any).offEvent('viewport_changed', initTelegram);
     };
   }, []);
 
