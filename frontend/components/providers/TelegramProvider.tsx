@@ -74,15 +74,15 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
 
     if (tryInit()) return;
 
-    // Retry every 300ms up to 10 times
+    // Retry every 100ms up to 30 times (3s total)
     let attempts = 0;
     const interval = setInterval(() => {
       attempts++;
-      if (tryInit() || attempts >= 10) {
+      if (tryInit() || attempts >= 30) {
         clearInterval(interval);
         setIsReady(true);
       }
-    }, 300);
+    }, 100);
 
     return () => clearInterval(interval);
   }, []);

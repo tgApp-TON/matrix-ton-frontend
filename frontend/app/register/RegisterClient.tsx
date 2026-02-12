@@ -27,6 +27,7 @@ export function RegisterClient() {
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [registering, setRegistering] = useState(false);
+  const [showNoTelegramMessage, setShowNoTelegramMessage] = useState(false);
 
   const telegramId = typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.id ?? user?.id : user?.id;
 
@@ -234,6 +235,12 @@ export function RegisterClient() {
     marginTop: '1rem',
   };
 
+  useEffect(() => {
+    if (!isReady || telegramId) return;
+    const t = setTimeout(() => setShowNoTelegramMessage(true), 5000);
+    return () => clearTimeout(t);
+  }, [isReady, telegramId]);
+
   if (!isReady) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center" style={{ padding: '2rem' }}>
@@ -244,6 +251,14 @@ export function RegisterClient() {
   }
 
   if (!telegramId) {
+    if (!showNoTelegramMessage) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center" style={{ padding: '2rem' }}>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500" />
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', marginTop: '1rem' }}>Loading...</p>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen flex flex-col items-center justify-center" style={{ padding: '2rem' }}>
         <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.125rem', textAlign: 'center', marginBottom: '1.5rem' }}>
