@@ -36,6 +36,8 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     const initDataUnsafe = tg?.initDataUnsafe;
     let userFromUnsafe = initDataUnsafe?.user;
 
+    console.log('userFromUnsafe:', JSON.stringify(userFromUnsafe));
+    console.log('initDataUnsafe full:', JSON.stringify(initDataUnsafe));
 
     // telegramId for consumers = user?.id ?? null (no fallback id)
     if (typeof window !== 'undefined' && tg) {
