@@ -223,7 +223,7 @@ export function RegisterClient() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center" style={{ padding: '2rem' }}>
         <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.125rem', textAlign: 'center', marginBottom: '1.5rem' }}>
-          Please open this app via Telegram bot
+          Please open this app through Telegram bot @MatrixTON_Bot
         </p>
         <a
           href="https://t.me/MatrixTON_Bot"

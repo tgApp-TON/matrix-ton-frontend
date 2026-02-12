@@ -36,8 +36,7 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     const initDataUnsafe = tg?.initDataUnsafe;
     let userFromUnsafe = initDataUnsafe?.user;
 
-    console.log('TG WebApp version:', tg?.version);
-    console.log('TG platform:', tg?.platform);
+    console.log('platform:', tg?.platform, 'version:', tg?.version, 'user:', tg?.initDataUnsafe?.user);
     console.log('initData:', tg?.initData);
     console.log('user from initDataUnsafe:', userFromUnsafe);
 
