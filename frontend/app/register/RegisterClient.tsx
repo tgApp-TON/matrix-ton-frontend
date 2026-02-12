@@ -30,9 +30,15 @@ export function RegisterClient() {
 
   const telegramId = typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.id ?? user?.id : user?.id;
 
-  console.log('[RegisterClient] mounted, telegramId:', telegramId);
   const telegramUsername = typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.username ?? user?.username : user?.username;
   const isPremiumUser = typeof window !== 'undefined' ? WebApp?.initDataUnsafe?.user?.is_premium ?? isPremium : isPremium;
+
+  useEffect(() => {
+    console.log('Telegram WebApp:', typeof window !== 'undefined' ? window.Telegram?.WebApp : 'SSR');
+    console.log('initDataUnsafe:', typeof window !== 'undefined' ? window.Telegram?.WebApp?.initDataUnsafe : undefined);
+    console.log('user from useTelegram:', user);
+    console.log('telegramId resolved:', telegramId);
+  }, []);
 
   useEffect(() => {
     WebApp?.ready?.();
@@ -123,7 +129,7 @@ export function RegisterClient() {
     const walletToSend = walletOverride !== undefined ? walletOverride : (tonAddress ?? '');
     console.log('handleRegister called with:', { telegramId, nickname, tonAddress, nicknameAvailable, walletToSend });
     if (!telegramId || !nickname) {
-      setNicknameError(`Missing: telegramId=${telegramId}, nickname=${nickname}`);
+      setNicknameError('Missing required fields');
       return;
     }
     setRegistering(true);
