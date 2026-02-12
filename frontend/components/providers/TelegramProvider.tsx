@@ -32,21 +32,21 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
   const [referralCode, setReferralCode] = useState<string | null>(null);
 
   useEffect(() => {
-    const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
-    const initDataUnsafe = tg?.initDataUnsafe;
-    let userFromUnsafe = initDataUnsafe?.user;
+    let retryTimeout: ReturnType<typeof setTimeout> | undefined;
 
-    console.log('userFromUnsafe:', JSON.stringify(userFromUnsafe));
-    console.log('initDataUnsafe full:', JSON.stringify(initDataUnsafe));
+    const initTelegram = () => {
+      const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
+      const initDataUnsafe = tg?.initDataUnsafe;
+      const userFromUnsafe = initDataUnsafe?.user;
 
-    // telegramId for consumers = user?.id ?? null (no fallback id)
-    if (typeof window !== 'undefined' && tg) {
-      tg.ready();
-      tg.expand();
-      tg.setHeaderColor('#000000');
-      tg.setBackgroundColor('#000000');
+      console.log('userFromUnsafe:', JSON.stringify(userFromUnsafe));
+      console.log('initDataUnsafe full:', JSON.stringify(initDataUnsafe));
 
-      if (userFromUnsafe) {
+      if (typeof window !== 'undefined' && tg && userFromUnsafe) {
+        tg.ready();
+        tg.expand();
+        tg.setHeaderColor('#000000');
+        tg.setBackgroundColor('#000000');
         setUser({
           id: userFromUnsafe.id,
           first_name: userFromUnsafe.first_name,
@@ -55,26 +55,36 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
           language_code: userFromUnsafe.language_code,
           is_premium: userFromUnsafe.is_premium
         });
+        const startParam = initDataUnsafe?.start_param ?? null;
+        if (startParam) setReferralCode(startParam);
+        setIsReady(true);
+      } else if (typeof window !== 'undefined' && tg) {
+        tg.ready();
+        tg.expand();
+        tg.setHeaderColor('#000000');
+        tg.setBackgroundColor('#000000');
+        retryTimeout = setTimeout(initTelegram, 500);
+        return;
       } else {
         setUser(null);
+        const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+        const refParam = urlParams?.get('ref');
+        if (refParam) setReferralCode(refParam);
+        setIsReady(true);
       }
+    };
 
-      const startParam = initDataUnsafe?.start_param ?? null;
-      if (startParam) {
-        setReferralCode(startParam);
-        console.log('Referral code from URL:', startParam);
-      }
-    } else {
-      setUser(null);
-      const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-      const refParam = urlParams?.get('ref');
-      if (refParam) {
-        setReferralCode(refParam);
-        console.log('Referral code from browser URL:', refParam);
-      }
+    initTelegram();
+
+    const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
+    if (tg?.onEvent) {
+      tg.onEvent('viewport_changed', initTelegram);
     }
 
-    setIsReady(true);
+    return () => {
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (tg?.offEvent) tg.offEvent('viewport_changed', initTelegram);
+    };
   }, []);
 
   const value = {
