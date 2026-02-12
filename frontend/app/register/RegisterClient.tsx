@@ -16,7 +16,7 @@ const STEPS = [
 
 export function RegisterClient() {
   const router = useRouter();
-  const { user, isPremium, referralCode } = useTelegram();
+  const { user, isPremium, referralCode, isReady } = useTelegram();
   const tonAddress = useTonAddress();
   const [step, setStep] = useState(1);
   const [premiumChecked, setPremiumChecked] = useState<boolean | null>(null);
@@ -234,11 +234,20 @@ export function RegisterClient() {
     marginTop: '1rem',
   };
 
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ padding: '2rem' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500" />
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', marginTop: '1rem' }}>Loading...</p>
+      </div>
+    );
+  }
+
   if (!telegramId) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center" style={{ padding: '2rem' }}>
         <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.125rem', textAlign: 'center', marginBottom: '1.5rem' }}>
-          Please open this app through Telegram bot @MatrixTON_Bot
+          Please open this app in Telegram mobile app
         </p>
         <a
           href="https://t.me/MatrixTON_Bot"
@@ -253,7 +262,7 @@ export function RegisterClient() {
             textDecoration: 'none',
           }}
         >
-          t.me/MatrixTON_Bot
+          Open in Telegram
         </a>
       </div>
     );
