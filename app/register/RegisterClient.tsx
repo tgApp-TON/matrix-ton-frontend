@@ -58,9 +58,24 @@ export function RegisterClient() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    // Check localStorage first
     if (localStorage.getItem('matrix_ton_user_id')) {
       router.replace('/tables');
+      return;
     }
+    // Check by telegramId from Telegram WebApp
+    const tg = (window as any)?.Telegram?.WebApp;
+    const telegramId = tg?.initDataUnsafe?.user?.id;
+    if (!telegramId) return;
+    fetch(`/api/auth/me?telegramId=${telegramId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.exists && data.user?.id) {
+          localStorage.setItem('matrix_ton_user_id', String(data.user.id));
+          router.replace('/tables');
+        }
+      })
+      .catch(() => {});
   }, [router]);
 
   useEffect(() => {
