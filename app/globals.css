@@ -98,3 +98,18 @@ body {
     transform: scale(0.85);
   }
 }
+
+/* TonConnect modal z-index fix - ensure wallet selector appears above app overlays (e.g. menu wallet modal) */
+[data-tc-wallets-modal-container] {
+  z-index: 99999999 !important;
+}
+[data-tc-modal-container] {
+  z-index: 99999999 !important;
+}
+tc-root {
+  z-index: 99999999 !important;
+}
+#tc-widget-root {
+  z-index: 99999999 !important;
+  position: fixed !important;
+}
