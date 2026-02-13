@@ -7,7 +7,7 @@ import { useTelegram } from '@/components/providers/TelegramProvider';
 
 export function RegisterClient() {
   const router = useRouter();
-  const { user, webApp } = useTelegram();
+  const { user, webApp, isReady } = useTelegram();
   const tonAddress = useTonAddress();
   const containerStyle: React.CSSProperties = {
     maxWidth: '420px',
@@ -62,9 +62,10 @@ export function RegisterClient() {
       router.replace('/tables');
       return;
     }
-    const tg = (window as any)?.Telegram?.WebApp;
+    if (!isReady) return;
+    const tg: any = (window as any)?.Telegram?.WebApp;
     const telegramId = tg?.initDataUnsafe?.user?.id;
-    console.log('register check - tg:', !!tg, 'telegramId:', telegramId, 'initDataUnsafe:', JSON.stringify(tg?.initDataUnsafe));
+    console.log('register check - isReady:', isReady, 'telegramId:', telegramId);
     if (!telegramId) return;
     fetch(`/api/auth/me?telegramId=${telegramId}`)
       .then((r) => r.json())
@@ -76,7 +77,7 @@ export function RegisterClient() {
         }
       })
       .catch((e) => { console.log('me error:', e); });
-  }, [router]);
+  }, [router, isReady]);
 
   useEffect(() => {
     if (step !== 2) return;
