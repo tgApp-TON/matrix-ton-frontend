@@ -57,16 +57,49 @@ export function MenuPanel({ isOpen, onClose }: MenuPanelProps) {
     router.push(path);
   };
 
-  const handleWalletAction = () => {
+  const handleWalletAction = async () => {
     if (!tonConnectUI) return;
+
     if (tonAddress) {
-      tonConnectUI.disconnect().then(() => {
-        setTimeout(() => {
-          tonConnectUI.openModal();
-        }, 1000);
+      await tonConnectUI.disconnect();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    const wallets = await tonConnectUI.getWallets();
+    const telegramWallet =
+      wallets.find(
+        (w: { name?: string; appName?: string }) =>
+          w.name === 'Telegram Wallet' ||
+          w.appName === 'telegram-wallet' ||
+          w.name === 'Tonkeeper'
+      ) || wallets[0];
+
+    if (!telegramWallet) {
+      console.error('No wallets found');
+      return;
+    }
+
+    const walletSource = telegramWallet as { universalLink?: string; bridgeUrl?: string };
+    if (!walletSource.universalLink || !walletSource.bridgeUrl) {
+      console.error('Wallet missing universalLink or bridgeUrl');
+      return;
+    }
+
+    try {
+      const universalLink = tonConnectUI.connector.connect({
+        universalLink: walletSource.universalLink,
+        bridgeUrl: walletSource.bridgeUrl,
       });
-    } else {
-      tonConnectUI.openModal();
+      if (typeof universalLink === 'string') {
+        const tg = (window as any)?.Telegram?.WebApp;
+        if (tg?.openLink) {
+          tg.openLink(universalLink);
+        } else {
+          window.open(universalLink, '_blank');
+        }
+      }
+    } catch (e) {
+      console.error('Wallet connect error:', e);
     }
   };
 
@@ -251,6 +284,23 @@ export function MenuPanel({ isOpen, onClose }: MenuPanelProps) {
               }}
             >
               {tonAddress ? '🔄 Switch / Disconnect Wallet' : '🔗 Connect Wallet'}
+            </button>
+            <button
+              type="button"
+              onClick={() => tonConnectUI?.openModal?.()}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(168,85,247,0.4)',
+                color: '#a855f7',
+                padding: '10px',
+                borderRadius: '8px',
+                width: '100%',
+                marginTop: '8px',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+              }}
+            >
+              Or open wallet selector
             </button>
           </div>
         </div>
