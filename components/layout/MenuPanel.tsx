@@ -94,11 +94,14 @@ export function MenuPanel({ isOpen, onClose }: MenuPanelProps) {
         {/* Section 1 - Wallet */}
         <p style={{ color: '#aaaaaa', fontSize: '0.85rem', margin: '0 0 4px 0' }}>Wallet</p>
         {tonAddress ? (
-          <p style={{ color: '#888888', fontSize: '0.75rem', margin: '0 0 8px 0', wordBreak: 'break-all' }}>
+          <p style={{ color: '#888888', fontSize: '0.75rem', margin: '0 0 0 0', wordBreak: 'break-all' }}>
             {tonAddress}
           </p>
         ) : null}
-        <div style={{ marginBottom: '16px' }}>
+        <p style={{ color: '#aaaaaa', fontSize: '0.85rem', margin: '12px 0 6px 0' }}>
+          {tonAddress ? 'Connected wallet:' : 'No wallet connected'}
+        </p>
+        <div style={{ marginTop: '12px', marginBottom: '16px' }}>
           <TonConnectButton />
         </div>
 

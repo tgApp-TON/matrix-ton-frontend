@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sun } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { CanvasTableCard } from '@/components/tables/CanvasTableCard';
 import { ScrollButtons } from '@/components/ScrollButtons';
 import { MenuPanel } from '@/components/layout/MenuPanel';
@@ -11,7 +11,7 @@ import { TABLE_PRICES } from '@/lib/types';
 export default function TablesPage() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLightTheme, setIsLightTheme] = useState(false);
+  const [isGrayscale, setIsGrayscale] = useState(false);
   const [userTables, setUserTables] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -20,6 +20,12 @@ export default function TablesPage() {
   const [userWallet, setUserWallet] = useState<string>('');
 
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('matrix_ton_grayscale');
+    setIsGrayscale(saved === 'true');
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -134,20 +140,27 @@ export default function TablesPage() {
     }
   };
 
+  const toggleGrayscale = () => {
+    const next = !isGrayscale;
+    setIsGrayscale(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('matrix_ton_grayscale', next ? 'true' : 'false');
+    }
+  };
+
   return (
     <div
       className="min-h-screen relative"
-      style={
-        isLightTheme
-          ? { backgroundColor: 'rgba(248, 250, 252, 0.92)', minHeight: '100vh' }
-          : undefined
-      }
+      style={{
+        minHeight: '100vh',
+        filter: isGrayscale ? 'grayscale(100%)' : undefined,
+      }}
     >
       {!loading && (
         <>
           <button
             type="button"
-            onClick={() => setIsLightTheme((prev) => !prev)}
+            onClick={toggleGrayscale}
             style={{
               position: 'fixed',
               top: '12px',
@@ -164,7 +177,11 @@ export default function TablesPage() {
               cursor: 'pointer',
             }}
           >
-            <Sun size={26} style={{ color: 'rgba(168,85,247,0.9)' }} />
+            {isGrayscale ? (
+              <Moon size={26} style={{ color: 'rgba(168,85,247,0.9)' }} />
+            ) : (
+              <Sun size={26} style={{ color: 'rgba(168,85,247,0.9)' }} />
+            )}
           </button>
           <button
             type="button"
@@ -250,13 +267,7 @@ export default function TablesPage() {
               const isUnlocked = tableNumber === 1 || prevTableActive;
 
               return (
-                <div
-                  key={tableNumber}
-                  style={{
-                    width: '44vw',
-                    ...(isLightTheme ? { backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: '16px', padding: '8px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' } : {}),
-                  }}
-                >
+                <div key={tableNumber} style={{ width: '44vw' }}>
                   <CanvasTableCard
                     tableNumber={tableNumber}
                     price={price}
