@@ -11,8 +11,15 @@ export default function ReferralsPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const saved = localStorage.getItem('matrix_ton_grayscale');
-    setIsGrayscale(saved === 'true' || saved === '1');
+    const value = saved === 'true' || saved === '1';
+    setIsGrayscale(value);
+    document.documentElement.style.filter = value ? 'grayscale(100%)' : '';
   }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.style.filter = isGrayscale ? 'grayscale(100%)' : '';
+  }, [isGrayscale]);
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
@@ -44,7 +51,6 @@ export default function ReferralsPage() {
           color: '#ffffff',
           paddingTop: '80px',
           padding: '80px 24px 24px',
-          filter: isGrayscale ? 'grayscale(100%)' : undefined,
         }}
       >
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '16px' }}>Referrals</h1>

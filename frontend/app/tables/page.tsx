@@ -24,8 +24,15 @@ export default function TablesPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const saved = localStorage.getItem('matrix_ton_grayscale');
-    setIsGrayscale(saved === 'true');
+    const value = saved === 'true' || saved === '1';
+    setIsGrayscale(value);
+    document.documentElement.style.filter = value ? 'grayscale(100%)' : '';
   }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.style.filter = isGrayscale ? 'grayscale(100%)' : '';
+  }, [isGrayscale]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -211,7 +218,6 @@ export default function TablesPage() {
         style={{
           paddingTop: '70px',
           minHeight: '100vh',
-          filter: isGrayscale ? 'grayscale(100%)' : undefined,
         }}
       >
         <div

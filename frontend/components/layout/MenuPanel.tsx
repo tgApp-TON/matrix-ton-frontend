@@ -57,16 +57,16 @@ export function MenuPanel({ isOpen, onClose }: MenuPanelProps) {
     router.push(path);
   };
 
-  const handleWalletAction = async () => {
+  const handleWalletAction = () => {
     if (!tonConnectUI) return;
     if (tonAddress) {
-      await tonConnectUI.disconnect();
-      await new Promise((resolve) => setTimeout(resolve, 800));
-    }
-    try {
-      await tonConnectUI.openModal();
-    } catch (e) {
-      console.error('openModal error:', e);
+      tonConnectUI.disconnect().then(() => {
+        setTimeout(() => {
+          tonConnectUI.openModal();
+        }, 1000);
+      });
+    } else {
+      tonConnectUI.openModal();
     }
   };
 
@@ -250,7 +250,7 @@ export function MenuPanel({ isOpen, onClose }: MenuPanelProps) {
                 cursor: 'pointer',
               }}
             >
-              🔄 Switch / Connect Wallet
+              {tonAddress ? '🔄 Switch / Disconnect Wallet' : '🔗 Connect Wallet'}
             </button>
           </div>
         </div>

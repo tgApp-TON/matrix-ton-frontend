@@ -58,6 +58,13 @@ export function RegisterClient() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('matrix_ton_grayscale');
+    const grayscale = saved === 'true' || saved === '1';
+    document.documentElement.style.filter = grayscale ? 'grayscale(100%)' : '';
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (localStorage.getItem('matrix_ton_user_id')) {
       router.replace('/tables');
       return;
