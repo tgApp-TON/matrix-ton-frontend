@@ -1,6 +1,7 @@
 'use client';
 import { TrendingUp, Users, Repeat, Wallet, GitBranch } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { TonConnectButton, useTonAddress } from '@tonconnect/ui-react';
 import { ReferralTree } from './ReferralTree';
 
 interface StatsScreenProps {
@@ -13,6 +14,22 @@ export function StatsScreen({ isOpen, onClose }: StatsScreenProps) {
   const [showTree, setShowTree] = useState(false);
   const [userNickname, setUserNickname] = useState<string | null>(null);
   const [userWallet, setUserWallet] = useState<string | null>(null);
+  const tonAddress = useTonAddress();
+  const hasInitialWalletRun = useRef(false);
+
+  useEffect(() => {
+    const userId = typeof window !== 'undefined' ? localStorage.getItem('matrix_ton_user_id') : null;
+    if (!userId) return;
+    if (!hasInitialWalletRun.current) {
+      hasInitialWalletRun.current = true;
+      return;
+    }
+    fetch('/api/auth/update-wallet', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, tonWallet: tonAddress || '' }),
+    }).catch(() => {});
+  }, [tonAddress]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -169,14 +186,19 @@ export function StatsScreen({ isOpen, onClose }: StatsScreenProps) {
                     <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', margin: 0 }}>{userNickname}</p>
                   </div>
                 )}
-                {userWallet && (
-                  <div style={{ marginBottom: '12px' }}>
-                    <p style={{ color: '#aaaaaa', fontSize: '0.9rem', margin: '0 0 4px 0' }}>Wallet</p>
-                    <p style={{ color: '#aaaaaa', fontSize: '0.9rem', margin: 0 }}>
-                      {userWallet.slice(0, 6)}...{userWallet.slice(-4)}
-                    </p>
-                  </div>
-                )}
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ color: '#aaaaaa', fontSize: '0.9rem', margin: '0 0 8px 0' }}>Wallet</p>
+                  {tonAddress ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                      <span style={{ color: '#aaaaaa', fontSize: '0.9rem' }}>
+                        {tonAddress.slice(0, 6)}...{tonAddress.slice(-4)}
+                      </span>
+                      <TonConnectButton />
+                    </div>
+                  ) : (
+                    <TonConnectButton />
+                  )}
+                </div>
                 <p style={{ color: '#aaaaaa', fontSize: '0.85rem', margin: '12px 0 0 0' }}>One nickname = one wallet</p>
               </div>
             )}
