@@ -1,7 +1,7 @@
 {
   "name": "matrix-ton",
   "version": "1.0.0",
-  "description": "",
+  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
@@ -28,11 +28,23 @@
     "@ton/ton": "^16.2.2",
     "dotenv": "^17.2.4",
     "grammy": "^1.39.3",
+    "telegraf": "^4.16.3",
     "ton-core": "^0.53.0",
     "ton-crypto": "^3.2.0",
     "tonweb": "^0.0.66"
   },
   "prisma": {
     "seed": "ts-node prisma/seed/seed.ts"
-  }
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tgApp-TON/matrix-ton-frontend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tgApp-TON/matrix-ton-frontend/issues"
+  },
+  "homepage": "https://github.com/tgApp-TON/matrix-ton-frontend#readme"
 }
