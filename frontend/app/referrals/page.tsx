@@ -174,7 +174,7 @@ export default function ReferralsPage() {
         onClick={() => router.push('/tables')}
         style={{
           position: 'fixed',
-          top: '12px',
+          top: 'calc(12px + env(safe-area-inset-top, 0px))',
           left: '12px',
           zIndex: 99999,
           width: '48px',
