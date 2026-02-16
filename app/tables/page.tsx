@@ -21,6 +21,7 @@ export default function TablesPage() {
   const [userWallet, setUserWallet] = useState<string>('');
   const [buyingTable, setBuyingTable] = useState<number | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{ tableNumber: number; price: number } | null>(null);
 
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -169,6 +170,7 @@ export default function TablesPage() {
       });
       const data = await res.json();
       if (data.success) {
+        setConfirmModal(null);
         await refreshTables();
         setToast({ msg: `Table ${tableNumber} activated!`, type: 'success' });
       } else {
@@ -315,7 +317,6 @@ export default function TablesPage() {
               const prevTableActive = userTables.some((t: any) => t.tableNumber === tableNumber - 1 && t.status === 'ACTIVE');
               const isUnlocked = tableNumber === 1 || prevTableActive;
               const statusBuy = isUnlocked && !isActive;
-              const isBuying = buyingTable === tableNumber;
 
               return (
                 <div key={tableNumber} style={{ width: '44vw' }}>
@@ -326,7 +327,8 @@ export default function TablesPage() {
                     slots={slots}
                     isActive={isActive}
                     isUnlocked={isUnlocked}
-                    onBuy={() => handleBuyTable(tableNumber)}
+                    onClick={statusBuy ? () => setConfirmModal({ tableNumber, price }) : undefined}
+                    onBuy={statusBuy ? () => setConfirmModal({ tableNumber, price }) : undefined}
                   />
                   {isActive && (
                     <div style={{ display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', marginTop: 6 }}>
@@ -345,27 +347,6 @@ export default function TablesPage() {
                       ))}
                     </div>
                   )}
-                  {statusBuy && (
-                    <button
-                      type="button"
-                      onClick={() => handleBuyTable(tableNumber)}
-                      disabled={isBuying}
-                      style={{
-                        background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
-                        color: 'white',
-                        fontWeight: 700,
-                        borderRadius: 8,
-                        padding: '8px 16px',
-                        width: '100%',
-                        marginTop: 8,
-                        cursor: isBuying ? 'not-allowed' : 'pointer',
-                        border: 'none',
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {isBuying ? 'Processing...' : `BUY • ${price} TON`}
-                    </button>
-                  )}
                 </div>
               );
             })
@@ -373,6 +354,93 @@ export default function TablesPage() {
         </div>
       </div>
       <MenuPanel isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      {confirmModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 999998,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+          }}
+          onClick={(e) => e.target === e.currentTarget && setConfirmModal(null)}
+        >
+          <div
+            style={{
+              background: '#0d0d0d',
+              border: '1px solid rgba(168,85,247,0.3)',
+              borderRadius: 20,
+              padding: 24,
+              maxWidth: 320,
+              width: '100%',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', textAlign: 'center' }}>
+              TABLE {confirmModal.tableNumber}
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#888', textAlign: 'center', marginBottom: 20 }}>
+              Activate this table?
+            </div>
+            <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: 'white' }}>
+                <span>Table price:</span>
+                <span>{confirmModal.price} TON</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#888', fontSize: '0.8rem' }}>
+                <span>Blockchain fee:</span>
+                <span>0.5 TON</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#a855f7', fontWeight: 700 }}>
+                <span>Total:</span>
+                <span>{confirmModal.price + 0.5} TON</span>
+              </div>
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#888', marginTop: 12, lineHeight: 1.5 }}>
+              💡 Payment goes directly to your sponsor&apos;s slot. You will receive payments when others join under you.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginTop: 20 }}>
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #333',
+                  color: '#888',
+                  borderRadius: 10,
+                  padding: 12,
+                  flex: 1,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBuyTable(confirmModal.tableNumber)}
+                disabled={buyingTable === confirmModal.tableNumber}
+                style={{
+                  background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 10,
+                  padding: 12,
+                  flex: 1,
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  cursor: buyingTable === confirmModal.tableNumber ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {buyingTable === confirmModal.tableNumber ? 'Processing...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {toast && (
         <div
           role="alert"
