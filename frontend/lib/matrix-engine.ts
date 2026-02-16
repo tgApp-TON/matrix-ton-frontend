@@ -41,7 +41,7 @@ function num(val: unknown): number {
   return Number.isNaN(n) ? 0 : n;
 }
 
-/** Pay net amount to user: walletBalance += net, UserStats.totalEarned += net, log payout, app revenue GAS */
+/** Pay net amount to user: User.walletBalance += net, User.totalEarned += net, UserStats.totalEarned += net, log payout, app revenue GAS */
 async function pay(
   toUserId: number,
   amount: number,
@@ -57,13 +57,15 @@ async function pay(
     return;
   }
 
-  const { data: user, error: userErr } = await supabase.from('User').select('walletBalance').eq('id', toUserId).single();
+  const { data: user, error: userErr } = await supabase.from('User').select('walletBalance, totalEarned').eq('id', toUserId).single();
   if (userErr) console.error('[matrix-engine] pay: User select error', { toUserId, error: userErr });
   const currentWallet = num((user as any)?.walletBalance);
+  const currentUserEarned = num((user as any)?.totalEarned);
   const newWallet = r2(currentWallet + net);
+  const newTotalEarned = r2(currentUserEarned + net);
 
-  const { error: walletUpd } = await supabase.from('User').update({ walletBalance: newWallet }).eq('id', toUserId);
-  if (walletUpd) console.error('[matrix-engine] pay: User walletBalance update error', { toUserId, error: walletUpd });
+  const { error: userUpd } = await supabase.from('User').update({ walletBalance: newWallet, totalEarned: newTotalEarned }).eq('id', toUserId);
+  if (userUpd) console.error('[matrix-engine] pay: User walletBalance/totalEarned update error', { toUserId, error: userUpd });
 
   const { data: stats } = await supabase.from('UserStats').select('totalEarned').eq('userId', toUserId).single();
   const currentEarned = num((stats as any)?.totalEarned);
