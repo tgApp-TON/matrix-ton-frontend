@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  height: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow: hidden;
+  background: #000000;
+  overscroll-behavior: none;
+}
+
+/* Safe area for notch/home indicator */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 .stars-bg {
   position: fixed;
   top: 0;
@@ -97,4 +112,19 @@ body {
   button {
     transform: scale(0.85);
   }
+}
+
+/* TonConnect modal z-index fix - ensure wallet selector appears above app overlays (e.g. menu wallet modal) */
+[data-tc-wallets-modal-container] {
+  z-index: 99999999 !important;
+}
+[data-tc-modal-container] {
+  z-index: 99999999 !important;
+}
+tc-root {
+  z-index: 99999999 !important;
+}
+#tc-widget-root {
+  z-index: 99999999 !important;
+  position: fixed !important;
 }

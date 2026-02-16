@@ -51,6 +51,10 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
 
       tg.ready();
       tg.expand();
+      tg.enableClosingConfirmation();
+      if (typeof tg.requestFullscreen === 'function') {
+        tg.requestFullscreen();
+      }
       tg.setHeaderColor('#000000');
       tg.setBackgroundColor('#000000');
 
