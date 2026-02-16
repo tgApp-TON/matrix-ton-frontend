@@ -52,13 +52,18 @@ async function pay(
   fromUserId?: number
 ): Promise<void> {
   const net = r2(amount - GAS);
-  if (net <= 0) return;
+  if (net <= 0) {
+    console.log('[matrix-engine] pay: net <= 0, skip', { toUserId, amount, net });
+    return;
+  }
 
-  const { data: user } = await supabase.from('User').select('walletBalance').eq('id', toUserId).single();
+  const { data: user, error: userErr } = await supabase.from('User').select('walletBalance').eq('id', toUserId).single();
+  if (userErr) console.error('[matrix-engine] pay: User select error', { toUserId, error: userErr });
   const currentWallet = num((user as any)?.walletBalance);
   const newWallet = r2(currentWallet + net);
 
-  await supabase.from('User').update({ walletBalance: newWallet }).eq('id', toUserId);
+  const { error: walletUpd } = await supabase.from('User').update({ walletBalance: newWallet }).eq('id', toUserId);
+  if (walletUpd) console.error('[matrix-engine] pay: User walletBalance update error', { toUserId, error: walletUpd });
 
   const { data: stats } = await supabase.from('UserStats').select('totalEarned').eq('userId', toUserId).single();
   const currentEarned = num((stats as any)?.totalEarned);
@@ -70,11 +75,12 @@ async function pay(
   if (upsertErr) {
     const { error: updateErr } = await supabase.from('UserStats').update({ totalEarned: newEarned, updatedAt: new Date().toISOString() }).eq('userId', toUserId);
     if (updateErr) {
-      await supabase.from('UserStats').insert({ userId: toUserId, totalEarned: newEarned, updatedAt: new Date().toISOString() });
+      const { error: insertErr } = await supabase.from('UserStats').insert({ userId: toUserId, totalEarned: newEarned, updatedAt: new Date().toISOString() });
+      if (insertErr) console.error('[matrix-engine] pay: UserStats insert error', { toUserId, error: insertErr });
     }
   }
 
-  await supabase.from('PayoutLog').insert({
+  const { error: logErr } = await supabase.from('PayoutLog').insert({
     fromUserId: fromUserId ?? toUserId,
     toUserId: toUserId,
     amount: net,
@@ -82,23 +88,29 @@ async function pay(
     slotNumber,
     type: logType,
   });
+  if (logErr) console.error('[matrix-engine] pay: PayoutLog insert error', { toUserId, error: logErr });
 
-  await supabase.from('AppRevenue').insert({
+  const { error: revErr } = await supabase.from('AppRevenue').insert({
     amount: GAS,
     type: 'GAS',
     sourceUserId: toUserId,
     tableNumber,
   });
+  if (revErr) console.error('[matrix-engine] pay: AppRevenue insert error', { toUserId, error: revErr });
 }
 
-/** Go up referrer chain until someone has MatrixTable for tableNumber; MASTER (id=1) is fallback. */
+/** Go up referrer chain until someone has MatrixTable for tableNumber; MASTER (id=1) is fallback.
+ *  Starts from userId's REFERRER (sponsor), not the user themselves - so buyer does not count as "parent". */
 export async function findParentWithTable(
   userId: number,
   tableNumber: number,
   supabase: SupabaseClient
 ): Promise<MatrixUser | null> {
-  let currentId: number | null = userId;
+  const { data: startUser } = await supabase.from('User').select('referrerId').eq('id', userId).single();
+  let currentId: number | null = (startUser as any)?.referrerId ?? null;
+  if (currentId == null) currentId = 1;
   const seen = new Set<number>();
+  console.log('[matrix-engine] findParentWithTable', { userId, tableNumber, startFrom: currentId });
 
   while (currentId != null && !seen.has(currentId)) {
     seen.add(currentId);
@@ -107,7 +119,10 @@ export async function findParentWithTable(
       .select('id, referrerId, walletBalance')
       .eq('id', currentId)
       .single();
-    if (!user) break;
+    if (!user) {
+      console.log('[matrix-engine] findParentWithTable: no user for', currentId);
+      break;
+    }
     const referrerId = (user as any).referrerId ?? null;
 
     const { data: table } = await supabase
@@ -117,6 +132,7 @@ export async function findParentWithTable(
       .eq('tableNumber', tableNumber)
       .maybeSingle();
     if (table) {
+      console.log('[matrix-engine] findParentWithTable: found parent', { parentId: currentId, tableNumber });
       const { data: u } = await supabase.from('User').select('id, referrerId, walletBalance').eq('id', currentId).single();
       const { data: s } = await supabase.from('UserStats').select('totalEarned').eq('userId', currentId).single();
       return {
@@ -130,6 +146,7 @@ export async function findParentWithTable(
     currentId = referrerId;
   }
 
+  console.log('[matrix-engine] findParentWithTable: using MASTER (id=1)');
   const { data: master } = await supabase.from('User').select('id, referrerId, walletBalance').eq('id', 1).single();
   const { data: masterStats } = await supabase.from('UserStats').select('totalEarned').eq('userId', 1).single();
   if (master)
@@ -155,15 +172,18 @@ export async function processSlotFill(
   depth: number = 0
 ): Promise<void> {
   if (depth > 500) throw new Error('processSlotFill: max depth exceeded');
+  console.log('[matrix-engine] processSlotFill', { ownerId, tableNumber, newMemberId, amount, depth });
 
-  const { data: tableRow } = await supabase
+  const { data: tableRow, error: tableErr } = await supabase
     .from('MatrixTable')
     .select('id, userId, tableNumber, slot1, slot2, slot3, slot4, frozen2Amount, cycleCount')
     .eq('userId', ownerId)
     .eq('tableNumber', tableNumber)
     .maybeSingle();
+  if (tableErr) console.error('[matrix-engine] processSlotFill: MatrixTable select error', { ownerId, tableNumber, error: tableErr });
 
   if (!tableRow) {
+    if (ownerId === 1) throw new Error('MASTER (id=1) must have MatrixTable rows for tables 1-12; seed the database.');
     const parent = await findParentWithTable(ownerId, tableNumber, supabase);
     if (!parent) throw new Error('No parent with table found');
     return processSlotFill(parent.id, tableNumber, newMemberId, amount, supabase, depth + 1);
@@ -196,7 +216,9 @@ export async function processSlotFill(
   if (slotNum === 3) updates.slot3 = newMemberId;
   if (slotNum === 4) updates.slot4 = newMemberId;
 
-  await supabase.from('MatrixTable').update(updates).eq('id', tableId);
+  console.log('[matrix-engine] processSlotFill: updating slot', { ownerId, tableNumber, tableId, slotNum, newMemberId, updates });
+  const { error: slotUpdErr } = await supabase.from('MatrixTable').update(updates).eq('id', tableId);
+  if (slotUpdErr) console.error('[matrix-engine] processSlotFill: MatrixTable slot update error', { tableId, error: slotUpdErr });
 
   if (slotNum === 1) {
     await pay(ownerId, amount, tableNumber, 1, 'SLOT', supabase, newMemberId);
@@ -355,9 +377,12 @@ export async function engineBuyTable(
   if (ue) await supabase.from('UserStats').insert({ userId, activeTables: 1, updatedAt: new Date().toISOString() });
 
   const parent = await findParentWithTable(userId, tableNumber, supabase);
+  const fillAmount = r2(price * (1 - COMMISSION));
+  console.log('[matrix-engine] engineBuyTable: after insert', { userId, tableNumber, parentId: parent?.id ?? null, fillAmount });
   if (parent) {
-    const fillAmount = r2(price * (1 - COMMISSION));
     await processSlotFill(parent.id, tableNumber, userId, fillAmount, supabase);
+  } else {
+    console.error('[matrix-engine] engineBuyTable: no parent found for slot fill', { userId, tableNumber });
   }
 
   return { success: true };
