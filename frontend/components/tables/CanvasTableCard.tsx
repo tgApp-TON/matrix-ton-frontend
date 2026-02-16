@@ -15,6 +15,7 @@ interface CanvasTableCardProps {
   isActive: boolean;
   isUnlocked: boolean;
   onBuy?: () => void;
+  onClick?: () => void;
 }
 
 export function CanvasTableCard({ 
@@ -24,7 +25,8 @@ export function CanvasTableCard({
   slots,
   isActive,
   isUnlocked,
-  onBuy
+  onBuy,
+  onClick
 }: CanvasTableCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cardRef = useRef<any>(null);
@@ -550,21 +552,23 @@ export function CanvasTableCard({
 
     // Add click handler for BUY button
     const handleClick = (e: MouseEvent) => {
-      if (!canvasRef.current || !isUnlocked || isActive || !onBuy) return;
-      
+      if (!canvasRef.current || !isUnlocked || isActive) return;
+      const handler = onClick ?? onBuy;
+      if (!handler) return;
+
       const rect = canvasRef.current.getBoundingClientRect();
       const currentWidth = cardRef.current?.opts?.width || 495;
       const currentHeight = cardRef.current?.opts?.height || 560;
       const scale = currentWidth / 495;
       const clickX = (e.clientX - rect.left) / (rect.width / currentWidth);
       const clickY = (e.clientY - rect.top) / (rect.height / currentHeight);
-      
-      // Status bar area: bottom 50px scaled
+
+      // Status bar area: bottom 50px scaled (BUY area)
       const statusBarY = currentHeight - 50 * scale;
       const statusBarH = 40 * scale;
-      
+
       if (clickY >= statusBarY && clickY <= statusBarY + statusBarH) {
-        onBuy();
+        handler();
       }
     };
 
@@ -580,7 +584,7 @@ export function CanvasTableCard({
       }
       cardRef.current?.destroy();
     };
-  }, [tableNumber, price, cycles, slots, isActive, isUnlocked, onBuy]);
+  }, [tableNumber, price, cycles, slots, isActive, isUnlocked, onBuy, onClick]);
 
   return (
     <div ref={containerRef} className="w-full" style={{ margin: 0, padding: 0 }}>
