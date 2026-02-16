@@ -13,11 +13,14 @@ export default function TablesPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isGrayscale, setIsGrayscale] = useState(false);
   const [userTables, setUserTables] = useState<any[]>([]);
+  const [matrixTables, setMatrixTables] = useState<Record<number, any>>({});
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [userNickname, setUserNickname] = useState<string>('');
   const [userWallet, setUserWallet] = useState<string>('');
+  const [buyingTable, setBuyingTable] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -33,6 +36,12 @@ export default function TablesPage() {
     if (typeof document === 'undefined') return;
     document.documentElement.style.filter = isGrayscale ? 'grayscale(100%)' : '';
   }, [isGrayscale]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -100,10 +109,19 @@ export default function TablesPage() {
     if (!userId) return;
     const fetchTables = async () => {
       try {
-        const response = await fetch(`/api/user/tables?userId=${userId}`);
-        const data = await response.json();
-        if (data.success) {
-          setUserTables(data.tables);
+        const [tablesRes, statusRes] = await Promise.all([
+          fetch(`/api/user/tables?userId=${userId}`),
+          fetch(`/api/table/status?userId=${userId}`),
+        ]);
+        const tablesData = await tablesRes.json();
+        const statusData = await statusRes.json();
+        if (tablesData.success) setUserTables(tablesData.tables);
+        if (statusData.tables) {
+          const map: Record<number, any> = {};
+          statusData.tables.forEach((t: any) => {
+            map[t.tableNumber] = t;
+          });
+          setMatrixTables(map);
         }
       } catch (error) {
         console.error('Failed to fetch tables:', error);
@@ -121,29 +139,45 @@ export default function TablesPage() {
   const refreshTables = async () => {
     if (!userId) return;
     try {
-      const response = await fetch(`/api/user/tables?userId=${userId}`);
-      const data = await response.json();
-      if (data.success) setUserTables(data.tables);
+      const [tablesRes, statusRes] = await Promise.all([
+        fetch(`/api/user/tables?userId=${userId}`),
+        fetch(`/api/table/status?userId=${userId}`),
+      ]);
+      const tablesData = await tablesRes.json();
+      const statusData = await statusRes.json();
+      if (tablesData.success) setUserTables(tablesData.tables);
+      if (statusData.tables) {
+        const map: Record<number, any> = {};
+        statusData.tables.forEach((t: any) => {
+          map[t.tableNumber] = t;
+        });
+        setMatrixTables(map);
+      }
     } catch (error) {
       console.error('Failed to fetch tables:', error);
     }
   };
 
-  const handleBuy = async (tableNumber: number) => {
+  const handleBuyTable = async (tableNumber: number) => {
     if (!userId) return;
+    setBuyingTable(tableNumber);
     try {
-      const response = await fetch('/api/user/tables/buy', {
+      const res = await fetch('/api/table/buy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: parseInt(userId, 10),
-          tableNumber,
-        }),
+        body: JSON.stringify({ userId: parseInt(userId, 10), tableNumber }),
       });
-      const data = await response.json();
-      if (data.success) await refreshTables();
-    } catch (error) {
-      console.error('Failed to buy table:', error);
+      const data = await res.json();
+      if (data.success) {
+        await refreshTables();
+        setToast({ msg: `Table ${tableNumber} activated!`, type: 'success' });
+      } else {
+        setToast({ msg: data.error ?? 'Purchase failed', type: 'error' });
+      }
+    } catch (e) {
+      setToast({ msg: 'Transaction failed', type: 'error' });
+    } finally {
+      setBuyingTable(null);
     }
   };
 
@@ -261,6 +295,8 @@ export default function TablesPage() {
               const isActive = !!userTable && userTable.status === 'ACTIVE';
               const price = TABLE_PRICES[tableNumber] ?? 0;
               const positions = userTable?.positions ?? [];
+              const mt = matrixTables[tableNumber];
+              const slotFilled = [mt?.slot1, mt?.slot2, mt?.slot3, mt?.slot4].map((s) => s != null);
               // Only pass nickname for display (never telegramUsername/telegramId)
               const toSlot = (p: any) => p ? { nickname: p.partnerNickname ?? p.nickname, filled: true } : null;
               const slots: [(any | null)?, (any | null)?, (any | null)?, (any | null)?] = [
@@ -269,9 +305,17 @@ export default function TablesPage() {
                 toSlot(positions.find((p: any) => p.position === 3) ?? null),
                 toSlot(positions.find((p: any) => p.position === 4) ?? null),
               ];
+              if (isActive && mt) {
+                slots[0] = slotFilled[0] ? { filled: true } : null;
+                slots[1] = slotFilled[1] ? { filled: true } : null;
+                slots[2] = slotFilled[2] ? { filled: true } : null;
+                slots[3] = slotFilled[3] ? { filled: true } : null;
+              }
               const cycles = userTable ? (userTable.cycleNumber ?? 1) - 1 : 0;
               const prevTableActive = userTables.some((t: any) => t.tableNumber === tableNumber - 1 && t.status === 'ACTIVE');
               const isUnlocked = tableNumber === 1 || prevTableActive;
+              const statusBuy = isUnlocked && !isActive;
+              const isBuying = buyingTable === tableNumber;
 
               return (
                 <div key={tableNumber} style={{ width: '44vw' }}>
@@ -282,8 +326,46 @@ export default function TablesPage() {
                     slots={slots}
                     isActive={isActive}
                     isUnlocked={isUnlocked}
-                    onBuy={() => handleBuy(tableNumber)}
+                    onBuy={() => handleBuyTable(tableNumber)}
                   />
+                  {isActive && (
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', marginTop: 6 }}>
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            background: slotFilled[i] ? '#a855f7' : 'transparent',
+                            border: '1px solid',
+                            borderColor: slotFilled[i] ? '#a855f7' : '#6b7280',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {statusBuy && (
+                    <button
+                      type="button"
+                      onClick={() => handleBuyTable(tableNumber)}
+                      disabled={isBuying}
+                      style={{
+                        background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                        color: 'white',
+                        fontWeight: 700,
+                        borderRadius: 8,
+                        padding: '8px 16px',
+                        width: '100%',
+                        marginTop: 8,
+                        cursor: isBuying ? 'not-allowed' : 'pointer',
+                        border: 'none',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {isBuying ? 'Processing...' : `BUY • ${price} TON`}
+                    </button>
+                  )}
                 </div>
               );
             })
@@ -291,6 +373,26 @@ export default function TablesPage() {
         </div>
       </div>
       <MenuPanel isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      {toast && (
+        <div
+          role="alert"
+          style={{
+            position: 'fixed',
+            bottom: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 999999,
+            background: toast.type === 'success' ? '#22c55e' : '#ef4444',
+            color: 'white',
+            borderRadius: 12,
+            padding: '12px 24px',
+            fontWeight: 600,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          }}
+        >
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
 }
