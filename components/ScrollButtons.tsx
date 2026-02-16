@@ -42,7 +42,7 @@ export function ScrollButtons() {
     <div
       style={{
         position: 'fixed',
-        bottom: '24px',
+        bottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
         right: '24px',
         zIndex: 99997,
         display: 'flex',

@@ -200,7 +200,7 @@ export default function TablesPage() {
             onClick={toggleGrayscale}
             style={{
               position: 'fixed',
-              top: '12px',
+              top: 'calc(12px + env(safe-area-inset-top, 0px))',
               left: '12px',
               zIndex: 99999,
               width: '56px',
@@ -225,7 +225,7 @@ export default function TablesPage() {
             onClick={() => setIsMenuOpen(true)}
             style={{
               position: 'fixed',
-              top: '12px',
+              top: 'calc(12px + env(safe-area-inset-top, 0px))',
               right: '12px',
               zIndex: 99999,
               width: '56px',
