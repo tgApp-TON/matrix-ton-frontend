@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sun, Moon } from 'lucide-react';
 import { CanvasTableCard } from '@/components/tables/CanvasTableCard';
-import { ScrollButtons } from '@/components/ScrollButtons';
 import { MenuPanel } from '@/components/layout/MenuPanel';
 import { TABLE_PRICES } from '@/lib/types';
 
@@ -200,7 +199,7 @@ export default function TablesPage() {
             onClick={toggleGrayscale}
             style={{
               position: 'fixed',
-              top: 'calc(20px + env(safe-area-inset-top, 0px))',
+              top: 'calc(52px + env(safe-area-inset-top, 0px))',
               left: '12px',
               zIndex: 99999,
               width: '56px',
@@ -225,7 +224,7 @@ export default function TablesPage() {
             onClick={() => setIsMenuOpen(true)}
             style={{
               position: 'fixed',
-              top: 'calc(20px + env(safe-area-inset-top, 0px))',
+              top: 'calc(52px + env(safe-area-inset-top, 0px))',
               right: '12px',
               zIndex: 99999,
               width: '56px',
@@ -246,7 +245,6 @@ export default function TablesPage() {
             <span style={{ width: '28px', height: '3px', background: 'rgba(168,85,247,0.9)', borderRadius: '10px' }} />
             <span style={{ width: '28px', height: '3px', background: 'rgba(168,85,247,0.9)', borderRadius: '10px' }} />
           </button>
-          <ScrollButtons />
         </>
       )}
       <div
