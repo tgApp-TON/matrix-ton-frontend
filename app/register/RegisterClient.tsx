@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { TonConnectButton, useTonAddress } from '@tonconnect/ui-react';
 import { useTelegram } from '@/components/providers/TelegramProvider';
+import { LanguageOnboarding } from '@/components/LanguageSelector';
+import { Language } from '@/services/i18n';
 
 export function RegisterClient() {
   const router = useRouter();
@@ -55,6 +57,7 @@ export function RegisterClient() {
   const [error, setError] = useState<string | null>(null);
   const [registerAttempt, setRegisterAttempt] = useState(0);
   const [nickname] = useState(() => 'user_' + Math.floor(100000 + Math.random() * 900000));
+  const [language, setLanguage] = useState<Language | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -164,6 +167,7 @@ export function RegisterClient() {
           nickname,
           tonWallet: walletToSend,
           referralCode: referralCodeToSend,
+          language: language,
         }),
       });
 
@@ -201,6 +205,11 @@ export function RegisterClient() {
     handleRegister();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, registerAttempt]);
+
+  // Step 0: Language selection
+  if (!language) {
+    return <LanguageOnboarding onLanguageSelect={setLanguage} />;
+  }
 
   return (
     <div
