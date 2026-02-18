@@ -129,6 +129,7 @@ export default function TablesPage() {
         console.log('Promises resolved');
         const tablesData = await tablesRes.json();
         const statusData = await statusRes.json();
+        console.log('statusData:', statusData);
         if (tablesData.success) setUserTables(tablesData.tables);
         if (statusData.tables) {
           const map: Record<number, any> = {};
