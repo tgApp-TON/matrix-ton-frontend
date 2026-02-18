@@ -168,7 +168,7 @@ export function MenuPanel({ isOpen, onClose }: MenuPanelProps) {
               borderBottom: '1px solid rgba(255,255,255,0.1)',
             }}
           >
-            <span>📊 Статистика</span>
+            <span>Статистика</span>
             <ArrowRight size={20} style={{ color: '#ffffff', flexShrink: 0 }} />
           </div>
         </div>
