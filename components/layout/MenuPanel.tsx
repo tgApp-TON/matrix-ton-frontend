@@ -152,7 +152,7 @@ export function MenuPanel({ isOpen, onClose }: MenuPanelProps) {
               router.push('/stats');
               onClose();
             }}
-            className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-semibold flex items-center justify-between hover:from-purple-700 hover:to-blue-700 transition-all"
+            className="w-full mt-3 px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-lg text-white/90 text-sm flex items-center justify-between transition-all border border-white/10"
           >
             <span>📊 Полная статистика</span>
             <ArrowRight className="w-5 h-5" />
