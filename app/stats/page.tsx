@@ -59,7 +59,7 @@ export default function StatsPage() {
   const last30Profit = stats ? stats.last30Days.earned - stats.last30Days.invested : 0;
 
   return (
-    <div className="min-h-screen relative" style={{ minHeight: '100vh' }}>
+    <div className="min-h-screen relative" style={{ minHeight: '100vh', backgroundColor: '#000000' }}>
       {!loading && (
         <button
           type="button"
@@ -93,50 +93,50 @@ export default function StatsPage() {
           paddingRight: '16px',
         }}
       >
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-md mx-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center min-h-[60vh]">
-              <p className="text-white text-lg">Загрузка...</p>
+              <p className="text-white text-base">Загрузка...</p>
             </div>
           ) : !stats ? (
             <div className="flex items-center justify-center min-h-[60vh]">
-              <p className="text-white text-lg">Ошибка загрузки статистики</p>
+              <p className="text-white text-base">Ошибка загрузки статистики</p>
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-white mb-1">Статистика</h1>
-              <p className="text-white/80 text-sm">{stats.user.nickname}</p>
-              <p className="text-white/50 text-xs mb-6">
+              <h1 className="text-xl font-bold text-white mb-1">Статистика</h1>
+              <p className="text-white/70 text-xs">{stats.user.nickname}</p>
+              <p className="text-white/70 text-xs mb-4">
                 Регистрация: {new Date(stats.user.registeredAt).toLocaleDateString('ru-RU')}
               </p>
 
               {/* За всё время */}
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-4">
+              <div className="bg-white/5 rounded-xl p-4 mb-3">
                 <h2 className="text-lg font-semibold text-white mb-3">За всё время</h2>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-black/50 border border-gray-800 rounded-lg p-3">
-                    <div className="text-white/60 text-xs mb-0.5">Потрачено</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white/5 rounded-lg p-3">
+                    <div className="text-white/70 text-xs mb-0.5">Потрачено</div>
                     <div className="text-white font-semibold text-base">
-                      {stats.allTime.invested.toFixed(2)} <span className="text-white/80 text-sm">TON</span>
+                      {stats.allTime.invested.toFixed(2)} <span className="text-white text-sm">TON</span>
                     </div>
                   </div>
-                  <div className="bg-black/50 border border-gray-800 rounded-lg p-3">
-                    <div className="text-white/60 text-xs mb-0.5">Заработано</div>
+                  <div className="bg-white/5 rounded-lg p-3">
+                    <div className="text-white/70 text-xs mb-0.5">Заработано</div>
                     <div className="text-white font-semibold text-base">
-                      {stats.allTime.earned.toFixed(2)} <span className="text-white/80 text-sm">TON</span>
+                      {stats.allTime.earned.toFixed(2)} <span className="text-white text-sm">TON</span>
                     </div>
                   </div>
-                  <div className="bg-black/50 border border-gray-800 rounded-lg p-3">
-                    <div className="text-white/60 text-xs mb-0.5">Рефералов</div>
+                  <div className="bg-white/5 rounded-lg p-3">
+                    <div className="text-white/70 text-xs mb-0.5">Рефералов</div>
                     <div className="text-white font-semibold text-base">{stats.allTime.referrals}</div>
                   </div>
-                  <div className="bg-black/50 border border-gray-800 rounded-lg p-3">
-                    <div className="text-white/60 text-xs mb-0.5">Столов</div>
+                  <div className="bg-white/5 rounded-lg p-3">
+                    <div className="text-white/70 text-xs mb-0.5">Столов</div>
                     <div className="text-white font-semibold text-base">{stats.allTime.activeTables}/12</div>
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-t border-gray-800">
-                  <div className="text-white/60 text-xs mb-0.5">Чистая прибыль</div>
+                <div className="mt-3 pt-3">
+                  <div className="text-white/70 text-xs mb-0.5">Чистая прибыль</div>
                   <div
                     className={`text-xl font-bold ${allTimeProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}
                   >
@@ -146,15 +146,15 @@ export default function StatsPage() {
               </div>
 
               {/* За 30 дней */}
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div className="bg-white/5 rounded-xl p-4">
                 <h2 className="text-lg font-semibold text-white mb-3">За последние 30 дней</h2>
                 <div className="space-y-2">
-                  <div className="bg-black/50 border border-gray-800 rounded-lg p-3">
+                  <div className="bg-white/5 rounded-lg p-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-white/80 text-sm">Потрачено</span>
-                      <span className="text-white font-semibold">{stats.last30Days.invested.toFixed(2)} TON</span>
+                      <span className="text-white/70 text-xs">Потрачено</span>
+                      <span className="text-white font-semibold text-base">{stats.last30Days.invested.toFixed(2)} TON</span>
                     </div>
-                    <div className="mt-1.5 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div className="mt-1.5 h-1.5 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-red-500/80 rounded-full"
                         style={{
@@ -163,12 +163,12 @@ export default function StatsPage() {
                       />
                     </div>
                   </div>
-                  <div className="bg-black/50 border border-gray-800 rounded-lg p-3">
+                  <div className="bg-white/5 rounded-lg p-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-white/80 text-sm">Заработано</span>
-                      <span className="text-white font-semibold">{stats.last30Days.earned.toFixed(2)} TON</span>
+                      <span className="text-white/70 text-xs">Заработано</span>
+                      <span className="text-white font-semibold text-base">{stats.last30Days.earned.toFixed(2)} TON</span>
                     </div>
-                    <div className="mt-1.5 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div className="mt-1.5 h-1.5 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-green-500/80 rounded-full"
                         style={{
@@ -177,12 +177,12 @@ export default function StatsPage() {
                       />
                     </div>
                   </div>
-                  <div className="bg-black/50 border border-gray-800 rounded-lg p-3">
+                  <div className="bg-white/5 rounded-lg p-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-white/80 text-sm">Новых рефералов</span>
-                      <span className="text-white font-semibold">{stats.last30Days.referrals}</span>
+                      <span className="text-white/70 text-xs">Новых рефералов</span>
+                      <span className="text-white font-semibold text-base">{stats.last30Days.referrals}</span>
                     </div>
-                    <div className="mt-1.5 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div className="mt-1.5 h-1.5 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500/80 rounded-full"
                         style={{
@@ -192,10 +192,10 @@ export default function StatsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-t border-gray-800">
-                  <div className="text-white/60 text-xs mb-0.5">Чистая прибыль за месяц</div>
+                <div className="mt-3 pt-3">
+                  <div className="text-white/70 text-xs mb-0.5">Чистая прибыль за месяц</div>
                   <div
-                    className={`text-lg font-bold ${last30Profit >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                    className={`text-xl font-bold ${last30Profit >= 0 ? 'text-green-400' : 'text-red-400'}`}
                   >
                     {(last30Profit >= 0 ? '+' : '') + last30Profit.toFixed(2)} TON
                   </div>
