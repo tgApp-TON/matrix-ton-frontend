@@ -105,7 +105,8 @@ export async function POST(request: NextRequest) {
 
     let matrixSuccess = false;
     try {
-      await engineRegisterUser(newUser.id, sponsorId, supabase);
+      // Table 1 creation removed - users must explicitly buy tables via /api/table/buy
+      // await engineRegisterUser(newUser.id, sponsorId, supabase);
       matrixSuccess = true;
     } catch (engineErr) {
       console.error('[register] matrix engine error:', engineErr);
