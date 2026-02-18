@@ -119,6 +119,7 @@ export default function TablesPage() {
 
   useEffect(() => {
     if (!userId) return;
+    console.log('userId:', userId);
     const fetchTables = async () => {
       console.log('Starting fetchTables');
       try {
