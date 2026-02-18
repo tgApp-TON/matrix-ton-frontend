@@ -120,11 +120,13 @@ export default function TablesPage() {
   useEffect(() => {
     if (!userId) return;
     const fetchTables = async () => {
+      console.log('Starting fetchTables');
       try {
         const [tablesRes, statusRes] = await Promise.all([
           fetch(`/api/user/tables?userId=${userId}`),
           fetch(`/api/table/status?userId=${userId}`),
         ]);
+        console.log('Promises resolved');
         const tablesData = await tablesRes.json();
         const statusData = await statusRes.json();
         if (tablesData.success) setUserTables(tablesData.tables);
@@ -134,12 +136,15 @@ export default function TablesPage() {
             map[t.tableNumber] = t;
           });
           setMatrixTables(map);
+          console.log('Data set, matrixTables:', Object.keys(map).length);
         }
       } catch (error) {
         console.error('Failed to fetch tables:', error);
       } finally {
         setProgress(100);
+        console.log('Progress set to 100');
         setLoading(false);
+        console.log('Loading set to false');
       }
     };
     fetchTables();
