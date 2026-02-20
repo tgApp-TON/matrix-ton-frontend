@@ -29,6 +29,6 @@ export const TABLE_PRICES = {
 export const PLATFORM_FEE = 0.1; // 10%
 
 // TON Connect URL
-export const TON_CONNECT_MANIFEST = 'https://raw.githubusercontent.com/yourusername/matrix-ton/main/public/tonconnect-manifest.json';
+export const TON_CONNECT_MANIFEST = 'https://raw.githubusercontent.com/yourusername/xionton/main/public/tonconnect-manifest.json';
 
 export const isTestnet = process.env.TON_NETWORK === 'testnet';

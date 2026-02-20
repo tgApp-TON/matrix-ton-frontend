@@ -121,7 +121,7 @@ bot.on('message:text', async (ctx) => {
     await supabase.rpc('update_30day_stats', { p_user_id: u.id });
     const { data: upd } = await supabase.from('User').select('last30DaysReferrals').eq('id',u.id).single();
     const { count: refs } = await supabase.from('User').select('*',{count:'exact',head:true}).eq('referrerId',u.id);
-    await ctx.reply(`👥 ${t(tr, 'referral_program', 'Referral Program')}\n\n🔗 https://t.me/MatrixTONTON_Bot?start=${u.referralCode}\n\n📊 ${t(tr, 'total', 'Total')}: ${refs||0}\n📅 ${t(tr, 'stats_last_30_days', 'Last 30 days')}: ${upd.last30DaysReferrals||0}`);
+    await ctx.reply(`👥 ${t(tr, 'referral_program', 'Referral Program')}\n\n🔗 https://t.me/XionTonTON_Bot?start=${u.referralCode}\n\n📊 ${t(tr, 'total', 'Total')}: ${refs||0}\n📅 ${t(tr, 'stats_last_30_days', 'Last 30 days')}: ${upd.last30DaysReferrals||0}`);
   }
   
   if (txt.includes('💰')) {
@@ -140,7 +140,7 @@ bot.on('message:text', async (ctx) => {
     );
   }
   
-  if (txt.includes('FAQ')) await ctx.reply('📖 FAQ\n\nMatrix TON');
+  if (txt.includes('FAQ')) await ctx.reply('📖 FAQ\n\nXionTon');
   if (txt.includes('⚙️')) { 
     const tr = await getTrans(ctx.from.id); 
     await ctx.reply(`⚙️ ${t(tr, 'menu_settings', 'Settings')}`, {reply_markup: new InlineKeyboard().text('🌐 Language','change_language')}); 

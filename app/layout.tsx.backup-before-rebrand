@@ -9,7 +9,7 @@ import { ScrollIndicator } from '@/components/ui/ScrollIndicator';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "XionTon",
+  title: "Matrix TON",
   description: "Decentralized matrix marketing on TON blockchain",
 };
 

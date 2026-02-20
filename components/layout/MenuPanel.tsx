@@ -286,7 +286,7 @@ export function MenuPanel({ isOpen, onClose }: MenuPanelProps) {
               <p style={{ color: '#aaaaaa', fontSize: '0.9rem', marginBottom: '20px' }}>No wallet connected</p>
             )}
             <p style={{ color: '#888888', fontSize: '0.85rem', marginBottom: '20px', lineHeight: 1.5 }}>
-              Connect your TON wallet to participate in Matrix TON. When you connect a new wallet, it replaces your current one.
+              Connect your TON wallet to participate in XionTon. When you connect a new wallet, it replaces your current one.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <TonConnectButton />

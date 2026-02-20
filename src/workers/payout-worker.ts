@@ -149,7 +149,7 @@ async function sendTonPayment(toAddress: string, amount: number): Promise<string
         internal({
           to: toAddress,
           value: BigInt(amount * 1e9),
-          body: 'Payout from Matrix TON'
+          body: 'Payout from XionTon'
         })
       ]
     });

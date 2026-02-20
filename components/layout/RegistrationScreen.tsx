@@ -426,7 +426,7 @@ export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
                     Channel Subscription
                   </div>
                   <p style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.6)', margin: 0 }}>
-                    {checks.channelSubscribed ? 'Subscribed to @MatrixTON_Official' : 'Subscribe to @MatrixTON_Official'}
+                    {checks.channelSubscribed ? 'Subscribed to @XionTon_Official' : 'Subscribe to @XionTon_Official'}
                   </p>
                 </div>
               </div>
@@ -447,7 +447,7 @@ export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
                       Premium Required
                     </p>
                     <p style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)', margin: 0 }}>
-                      Telegram Premium is required to join Matrix TON. Please upgrade your account and try again.
+                      Telegram Premium is required to join XionTon. Please upgrade your account and try again.
                     </p>
                   </div>
                 </div>
@@ -464,7 +464,7 @@ export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
                 Choose Your Nickname
               </h2>
               <p style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                This will be your unique identifier in Matrix TON
+                This will be your unique identifier in XionTon
               </p>
             </div>
 

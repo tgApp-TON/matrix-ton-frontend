@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Matrix TON - i18n Service
+ * XionTon - i18n Service
  * Загрузка переводов из Supabase
  */
 

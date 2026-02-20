@@ -185,7 +185,7 @@ export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text'
           }}>
-            Matrix TON
+            XionTon
           </h1>
           <p style={{ color: '#d1d5db', fontSize: '1.125rem' }}>
             Automatic Matrix System on TON
@@ -512,7 +512,7 @@ export function RegistrationScreen({ onComplete }: RegistrationScreenProps) {
             boxSizing: 'border-box'
           }}
         >
-          {loading ? 'Registering...' : '🚀 Start Matrix TON'}
+          {loading ? 'Registering...' : '🚀 Start XionTon'}
         </button>
 
         {/* Info */}

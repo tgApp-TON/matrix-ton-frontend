@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Copy, Share2 } from 'lucide-react';
 
-const BOT_LINK = 'https://t.me/MatrixTONTON_Bot';
+const BOT_LINK = 'https://t.me/XionTonTON_Bot';
 
 type FilterTab = 'all' | 'workers' | 'loosers';
 
@@ -83,7 +83,7 @@ export default function ReferralsPage() {
 
   const handleShare = () => {
     if (!referralLink) return;
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join Matrix TON!')}`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join XionTon!')}`;
     const tg = (window as any)?.Telegram?.WebApp;
     if (tg?.openTelegramLink) {
       tg.openTelegramLink(shareUrl);

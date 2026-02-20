@@ -1,5 +1,5 @@
 /**
- * Matrix TON Bot with Language Selection
+ * XionTon Bot with Language Selection
  */
 
 import { Bot, InlineKeyboard, Keyboard } from 'grammy';
@@ -99,7 +99,7 @@ bot.command('start', async (ctx) => {
     const trans = await getUserTranslations(ctx.from.id);
     
     await ctx.reply(
-      t(trans, 'welcome_title', '🎉 Welcome to Matrix TON!') + '\n\n' +
+      t(trans, 'welcome_title', '🎉 Welcome to XionTon!') + '\n\n' +
       t(trans, 'welcome_description', '🚀 Automatic matrix system'),
       { reply_markup: createMainMenu(trans) }
     );
@@ -173,5 +173,5 @@ bot.hears(/^👤/, async (ctx) => {
   );
 });
 
-console.log('🤖 Matrix TON Bot started with language support!');
+console.log('🤖 XionTon Bot started with language support!');
 bot.start();

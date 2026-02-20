@@ -1,4 +1,4 @@
-# Matrix TON - Project Structure & Flow
+# XionTon - Project Structure & Flow
 
 ## Screen Flow & Navigation
 

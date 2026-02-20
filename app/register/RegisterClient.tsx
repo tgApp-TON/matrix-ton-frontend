@@ -250,7 +250,7 @@ export function RegisterClient() {
             💎
           </div>
           <h1 style={{ color: '#ffffff', fontSize: '2.5rem', fontWeight: 700, margin: 0, textAlign: 'center' }}>
-            Matrix TON
+            XionTon
           </h1>
           <p style={{ color: '#cccccc', fontSize: '1rem', margin: 0, textAlign: 'center' }}>
             Earn on TON blockchain

@@ -1,4 +1,4 @@
-# Matrix TON - Full Implementation Plan
+# XionTon - Full Implementation Plan
 
 ## Current Priority Order
 

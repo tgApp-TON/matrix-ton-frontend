@@ -1,5 +1,5 @@
 /**
- * Matrix TON business logic engine.
+ * XionTon business logic engine.
  * Pure functions; no HTTP. Works with Supabase client.
  */
 
