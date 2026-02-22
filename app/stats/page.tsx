@@ -100,22 +100,22 @@ export default function StatsPage() {
       >
         {loading ? (
           <div className="flex items-center justify-center min-h-[40vh]">
-            <p style={{ color: '#ffffff', fontSize: '1rem' }}>Загрузка...</p>
+            <p style={{ color: '#ffffff', fontSize: '1rem' }}>Loading...</p>
           </div>
         ) : !stats ? (
           <div className="flex items-center justify-center min-h-[40vh]">
-            <p style={{ color: '#ffffff', fontSize: '1rem' }}>Ошибка загрузки статистики</p>
+            <p style={{ color: '#ffffff', fontSize: '1rem' }}>Failed to load statistics</p>
           </div>
         ) : (
           <>
             <h1 style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: 700, marginBottom: '4px' }}>
-              Статистика
+              Statistics
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem', marginBottom: '2px' }}>
               {stats.user.nickname}
             </p>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', marginBottom: '24px' }}>
-              Регистрация: {new Date(stats.user.registeredAt).toLocaleDateString('ru-RU')}
+              Registered: {new Date(stats.user.registeredAt).toLocaleDateString('en-US')}
             </p>
 
             {/* За всё время */}
@@ -130,12 +130,12 @@ export default function StatsPage() {
                   marginBottom: '8px',
                 }}
               >
-                За всё время
+                All time
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px' }}>
                   <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', marginBottom: '4px' }}>
-                    Потрачено
+                    Spent
                   </div>
                   <div style={{ color: '#ffffff', fontWeight: 600, fontSize: '1rem' }}>
                     {stats.allTime.invested.toFixed(2)} <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.875rem' }}>TON</span>
@@ -143,7 +143,7 @@ export default function StatsPage() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px' }}>
                   <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', marginBottom: '4px' }}>
-                    Получено
+                    Received
                   </div>
                   <div style={{ color: '#ffffff', fontWeight: 600, fontSize: '1rem' }}>
                     {stats.allTime.earned.toFixed(2)} <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.875rem' }}>TON</span>
@@ -151,20 +151,20 @@ export default function StatsPage() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px' }}>
                   <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', marginBottom: '4px' }}>
-                    Участников сети
+                    Network members
                   </div>
                   <div style={{ color: '#ffffff', fontWeight: 600, fontSize: '1rem' }}>{stats.allTime.referrals}</div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px' }}>
                   <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', marginBottom: '4px' }}>
-                    Столов
+                    Tables
                   </div>
                   <div style={{ color: '#ffffff', fontWeight: 600, fontSize: '1rem' }}>{stats.allTime.activeTables}/12</div>
                 </div>
               </div>
               <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', marginBottom: '4px' }}>
-                  Баланс
+                  Balance
                 </div>
                 <div
                   style={{
@@ -190,12 +190,12 @@ export default function StatsPage() {
                   marginBottom: '8px',
                 }}
               >
-                За последние 30 дней
+                Last 30 days
               </p>
               <div className="space-y-2">
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px' }}>
                   <div className="flex justify-between items-center">
-                    <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem' }}>Потрачено</span>
+                    <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem' }}>Spent</span>
                     <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '1rem' }}>{stats.last30Days.invested.toFixed(2)} TON</span>
                   </div>
                   <div style={{ marginTop: '6px', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '9999px', overflow: 'hidden' }}>
@@ -211,7 +211,7 @@ export default function StatsPage() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px' }}>
                   <div className="flex justify-between items-center">
-                    <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem' }}>Получено</span>
+                    <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem' }}>Received</span>
                     <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '1rem' }}>{stats.last30Days.earned.toFixed(2)} TON</span>
                   </div>
                   <div style={{ marginTop: '6px', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '9999px', overflow: 'hidden' }}>
@@ -227,7 +227,7 @@ export default function StatsPage() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px' }}>
                   <div className="flex justify-between items-center">
-                    <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem' }}>Новых участников сети</span>
+                    <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem' }}>New network members</span>
                     <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '1rem' }}>{stats.last30Days.referrals}</span>
                   </div>
                   <div style={{ marginTop: '6px', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '9999px', overflow: 'hidden' }}>
@@ -244,7 +244,7 @@ export default function StatsPage() {
               </div>
               <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', marginBottom: '4px' }}>
-                  Баланс за месяц
+                  Balance (month)
                 </div>
                 <div
                   style={{
