@@ -1,5 +1,7 @@
 {
   "url": "https://matrix-ton.vercel.app",
   "name": "XionTon",
-  "iconUrl": "https://matrix-ton.vercel.app/icon.png"
+  "iconUrl": "https://matrix-ton.vercel.app/icon.png",
+  "termsOfUseUrl": "https://matrix-ton.vercel.app/terms",
+  "privacyPolicyUrl": "https://matrix-ton.vercel.app/privacy"
 }
