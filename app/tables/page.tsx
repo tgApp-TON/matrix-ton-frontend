@@ -203,7 +203,7 @@ export default function TablesPage() {
       6:320, 7:640, 8:1280, 9:2560,
       10:5120, 11:10240, 12:20480
     };
-    const amount = Math.floor((prices[tableNumber] + 0.5) * 1e9);
+    const amount = tableNumber === 1 ? 10800000000 : Math.floor((prices[tableNumber] + 0.5) * 1e9);
     setBuyingTable(tableNumber);
     try {
       let payload: string;
