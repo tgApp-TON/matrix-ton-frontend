@@ -8,6 +8,7 @@ import { TableDetailModal } from '@/components/tables/TableDetailModal';
 import { MenuPanel } from '@/components/layout/MenuPanel';
 import { TABLE_PRICES } from '@/lib/types';
 import { useTonConnectUI } from '@tonconnect/ui-react';
+import { beginCell } from '@ton/core';
 
 export default function TablesPage() {
   const router = useRouter();
@@ -205,9 +206,15 @@ export default function TablesPage() {
     const amount = Math.floor((prices[tableNumber] + 0.5) * 1e9);
     setBuyingTable(tableNumber);
     try {
+      const payload = beginCell()
+        .storeUint(0x101, 32)
+        .storeUint(tableNumber, 8)
+        .endCell()
+        .toBoc()
+        .toString('base64');
       await tonConnectUI.sendTransaction({
         validUntil: Math.floor(Date.now() / 1000) + 600,
-        messages: [{ address: CONTRACT, amount: amount.toString() }]
+        messages: [{ address: CONTRACT, amount: amount.toString(), payload }]
       });
       setConfirmModal(null);
       setToast({ msg: `Payment sent! Table ${tableNumber} will activate shortly.`, type: 'success' });
