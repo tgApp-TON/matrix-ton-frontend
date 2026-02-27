@@ -50,10 +50,22 @@ export default function TablesPage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const storedId = localStorage.getItem('matrix_ton_user_id');
+    let storedId = localStorage.getItem('matrix_ton_user_id');
     if (!storedId) {
-      router.replace('/register');
-      return;
+      // Try to find user by Telegram ID
+      const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
+      if (tgUser?.id) {
+        const res = await fetch(`/api/auth/me?telegramId=${tgUser.id}`);
+        const data = await res.json();
+        if (data.exists && data.user?.id) {
+          storedId = String(data.user.id);
+          localStorage.setItem('matrix_ton_user_id', storedId);
+        }
+      }
+      if (!storedId) {
+        router.replace('/register');
+        return;
+      }
     }
     let cancelled = false;
     (async () => {
