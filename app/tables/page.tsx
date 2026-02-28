@@ -213,7 +213,7 @@ export default function TablesPage() {
     try {
       let payload: string;
       if (tableNumber === 1) {
-        const masterWallet = process.env.NEXT_PUBLIC_MASTER_WALLET || CONTRACT;
+        const masterWallet = 'UQDO7QI8Hvp5ZSZ7zr-4CPlnxCjP3kfw2dSyuXDCJ3fgQtMY';
         payload = beginCell()
           .storeUint(0x100, 32)
           .storeAddress(Address.parse(masterWallet))
