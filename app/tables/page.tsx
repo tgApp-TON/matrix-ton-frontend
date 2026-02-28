@@ -203,11 +203,11 @@ export default function TablesPage() {
     const CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '';
     if (!CONTRACT) { setToast({ msg: 'Contract not configured', type: 'error' }); return; }
     const prices: Record<number, number> = {
-      1:10, 2:20, 3:40, 4:80, 5:160,
-      6:320, 7:640, 8:1280, 9:2560,
-      10:5120, 11:10240, 12:20480
+      1:0.0001, 2:0.0002, 3:0.0004, 4:0.0008, 5:0.0016,
+      6:0.0032, 7:0.0064, 8:0.0128, 9:0.0256,
+      10:0.0512, 11:0.1024, 12:0.2048
     };
-    const amount = tableNumber === 1 ? 10800000000 : Math.floor((prices[tableNumber] + 0.8) * 1e9);
+    const amount = Math.floor((prices[tableNumber] + 0.000005) * 1e9);
     setBuyingTable(tableNumber);
     try {
       let payload: string;
@@ -460,7 +460,7 @@ export default function TablesPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', color: '#a855f7', fontWeight: 700 }}>
                 <span>Total:</span>
-                <span>{confirmModal.tableNumber === 1 ? 10.8 : confirmModal.price + 0.8} TON</span>
+                <span>{(confirmModal.price + 0.000005).toFixed(6)} TON</span>
               </div>
             </div>
             <div style={{ fontSize: '0.75rem', color: '#888', marginTop: 12, lineHeight: 1.5 }}>
