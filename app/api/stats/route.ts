@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 });
     }
 
-    await supabase.rpc('update_30day_stats', { p_user_id: parseInt(userId) });
+    // rpc disabled
 
     const { data: user, error: userError } = await supabase
       .from('User')
