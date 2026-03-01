@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         .single();
       if (sponsorUser && !isMaster((sponsorUser as any).id)) {
         const { data: sponsorTables } = await supabase
-          .from('Table')
+          .from('MatrixTable')
           .select('id')
           .eq('userId', referrerId)
           .eq('status', 'ACTIVE');
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     if (referralIds.length > 0) {
       const { data: tables } = await supabase
-        .from('Table')
+        .from('MatrixTable')
         .select('userId')
         .in('userId', referralIds)
         .eq('status', 'ACTIVE');
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
     let tablesByUser: Record<number, { tableNumber: number; status: string }[]> = {};
     if (referralIds.length > 0) {
       const { data: allTables } = await supabase
-        .from('Table')
+        .from('MatrixTable')
         .select('userId, tableNumber, status')
         .in('userId', referralIds);
       referralIds.forEach((uid: number) => (tablesByUser[uid] = []));
